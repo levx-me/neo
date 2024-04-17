@@ -11,39 +11,26 @@ import {
   chars,
   colors,
 } from "@/Types";
+import {
+  COLUMNS,
+  ROWS,
+  getRandomChar,
+  getRandomColor,
+  getRandomInterval,
+} from "@/Helpers";
 export const Matrix: FC = () => {
-  const COLUMNS = 48;
-  const ROWS = 36;
-
-  const minInterval = 200;
-  const maxInterval = 2000;
-  const step = 200;
-
-  const [tick, setTick] = React.useState<number>(step);
   const [Matrix, setMatrixRender] = React.useState<any>(null);
 
-  function getRandomChar() {
-    return chars[Math.floor(Math.random() * chars.length)];
-  }
-
-  function getRandomColor(): TColor {
-    return colors[Math.floor(Math.random() * colors.length)];
-  }
-
-  function getRandomInterval() {
-    const numStep = (maxInterval - minInterval) / step;
-    // const randomFactor = Math.random() ** 2;
-    const randomFactor = Math.floor(Math.random() * (numStep + 1));
-    return minInterval + randomFactor * step;
-  }
-
-  function generateRow(columns: number): IRow {
+  function generateRow(columns: number, rowIndex: number): IRow {
     const row: IRow = [];
     for (let colIndex = 0; colIndex < columns; colIndex++) {
       row.push({
         char: getRandomChar(),
         color: getRandomColor(),
         interval: getRandomInterval(),
+        hieroglyph: false,
+        x: colIndex,
+        y: rowIndex,
       });
     }
     return row;
@@ -52,7 +39,7 @@ export const Matrix: FC = () => {
   function buildMatrix(rows: number, columns: number): IMatrix {
     const matrix: IMatrix = [];
     for (let index = 0; index < rows; index++) {
-      const row: IRow = generateRow(columns);
+      const row: IRow = generateRow(columns, index);
       matrix.push(row);
     }
     return matrix;
@@ -65,8 +52,8 @@ export const Matrix: FC = () => {
     <div>
       {matrix.map((row: IRow, rowIndex: number) => (
         <div key={`row-${rowIndex}`}>
-          {row.map((c: ICharacter, colIndex: number) => (
-            <Character data={c} key={`col-${colIndex}`} />
+          {row.map((char: ICharacter, colIndex: number) => (
+            <Character data={char} key={`col-${colIndex}`} />
           ))}
         </div>
       ))}
@@ -76,8 +63,6 @@ export const Matrix: FC = () => {
   const [isStarted, setisStarted] = React.useState<boolean>(false);
 
   useEffect(() => {
-    setMatrix(buildMatrix(ROWS, COLUMNS));
-    setMatrixRender(matrixComponents);
     if (!isStarted) {
       setTimeout(() => {
         setisStarted(true);
@@ -86,40 +71,25 @@ export const Matrix: FC = () => {
   }, []);
 
   useEffect(() => {
-    const intervalId = setInterval(() => {
-      tickMatrix(); // Ensure this function handles errors properly
-      setTick((tick) => {
-        if (tick !== maxInterval) {
-          return tick + step;
-        } else {
-          return minInterval;
-        }
-      });
-    }, step);
-    // return () => {
-    //   clearInterval(intervalId); // Clear the interval when the component unmounts
-    // };
+    if (isStarted) {
+      setMatrix(buildMatrix(ROWS, COLUMNS));
+      setMatrixRender(matrixComponents);
+    }
   }, [isStarted]);
 
-  function getNextChar(char: string) {
-    const currentIndex = chars.indexOf(char);
-    const nextIndex = currentIndex === chars.length ? 0 : currentIndex + 1;
-    return chars[nextIndex];
-  }
-
-  function tickMatrix() {
-    const matrixClone = matrix;
-    matrix.forEach((row: IRow, rowIndex: number) => {
-      row.forEach((char: ICharacter, colIndex: number) => {
-        if (char.interval % tick === 0 && tick !== step) {
-          matrixClone[rowIndex][colIndex].char = getNextChar(
-            matrixClone[rowIndex][colIndex].char
-          );
-        }
-      });
-    });
-    setMatrix(matrixClone);
-  }
+  // function tickMatrix() {
+  //   const matrixClone = matrix;
+  //   matrix.forEach((row: IRow, rowIndex: number) => {
+  //     row.forEach((char: ICharacter, colIndex: number) => {
+  //       if (char.interval % tick === 0 && tick !== step) {
+  //         matrixClone[rowIndex][colIndex].char = getNextChar(
+  //           matrixClone[rowIndex][colIndex].char
+  //         );
+  //       }
+  //     });
+  //   });
+  //   setMatrix(matrixClone);
+  // }
 
   //   useEffect(() => {
 
@@ -133,8 +103,8 @@ export const Matrix: FC = () => {
       sx={{ height: "100vh" }}
     >
       <Grid item>
-        {tick}
-        {matrixComponents}
+        {/* {tick} */}
+        {Matrix}
       </Grid>
     </Grid>
   );
