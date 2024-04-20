@@ -18,8 +18,13 @@ import {
   getRandomColor,
   getRandomInterval,
 } from "@/Helpers";
+import { useMouseDown } from "@/Hooks/mouseDown";
+import { useMousedownContext } from "@/Hooks/useMousedownContext";
+
 export const Matrix: FC = () => {
   const [Matrix, setMatrixRender] = React.useState<any>(null);
+
+  const mouseDown = useMousedownContext();
 
   function generateRow(columns: number, rowIndex: number): IRow {
     const row: IRow = [];
@@ -77,34 +82,24 @@ export const Matrix: FC = () => {
     }
   }, [isStarted]);
 
-  // function tickMatrix() {
-  //   const matrixClone = matrix;
-  //   matrix.forEach((row: IRow, rowIndex: number) => {
-  //     row.forEach((char: ICharacter, colIndex: number) => {
-  //       if (char.interval % tick === 0 && tick !== step) {
-  //         matrixClone[rowIndex][colIndex].char = getNextChar(
-  //           matrixClone[rowIndex][colIndex].char
-  //         );
-  //       }
-  //     });
-  //   });
-  //   setMatrix(matrixClone);
-  // }
-
-  //   useEffect(() => {
-
-  //   }, [tick]);
-
   return (
     <Grid
       container
       justifyContent={"center"}
       alignItems={"center"}
       sx={{ height: "100vh" }}
+      onMouseDown={(e) => {
+        mouseDown.handleMouseDown();
+      }}
+      onMouseUp={(e) => {
+        mouseDown.handleMouseUp();
+      }}
     >
       <Grid item>
-        {/* {tick} */}
+        {mouseDown.mouseIsDown ? "true" : "false"}
+
         {Matrix}
+        {/* {matrixComponents} */}
       </Grid>
     </Grid>
   );

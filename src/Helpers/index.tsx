@@ -1,9 +1,9 @@
-import { TColor, chars, colors, hyeroglyphs } from "@/Types";
+import { TColor, chars, colors, hyeroglyphs as hieroglyph } from "@/Types";
 export const step = 50;
 
 export const COLUMNS = 48;
 export const ROWS = 36;
-export const minInterval = 100;
+export const minInterval = 50;
 export const maxInterval = 2000;
 
 export function getRandomChar() {
@@ -21,18 +21,23 @@ export function getNextChar(currentChar: string) {
   }
   return chars[(index + 1) % chars.length]; // Get the next character, wrap around using modulo
 }
-export function getNextHyeroglyph(currentChar: string) {
-  const index = hyeroglyphs.indexOf(currentChar); // Find the index of the current character
+
+export function getRandomHieroglyph() {
+  return hieroglyph[Math.floor(Math.random() * chars.length)];
+}
+
+export function getNextHieroglyph(currentChar: string) {
+  const index = hieroglyph.indexOf(currentChar); // Find the index of the current character
   if (index === -1) {
     return " ";
   }
-  return hyeroglyphs[(index + 1) % hyeroglyphs.length]; // Get the next character, wrap around using modulo
+  return hieroglyph[(index + 1) % hieroglyph.length]; // Get the next character, wrap around using modulo
 }
 
 export function getRandomInterval() {
   const numStep = (maxInterval - minInterval) / step;
   // Use a power less than 1 to bias towards higher intervals
-  const randomFactor = Math.random() ** 0.5; // Biasing towards higher numbers
+  const randomFactor = Math.random() ** 0.7; // Biasing towards higher numbers
   const adjustedStep = Math.floor(randomFactor * numStep + 1);
   return minInterval + adjustedStep * step;
 }
