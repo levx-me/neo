@@ -17,12 +17,10 @@ export const MousedownProvider: FC<{ children: ReactNode }> = (props) => {
   const [mouseRightDown, setRightMouseDown] = useState(false);
 
   const handleMouseDown = (isDown: boolean) => {
-    console.log("handleMouse");
     setMouseDown(isDown);
   };
 
   const handleRightMouseDown = (isDown: boolean) => {
-    console.log("handleRightMouse");
     setRightMouseDown(isDown);
   };
   return (
