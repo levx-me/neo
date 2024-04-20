@@ -9,10 +9,6 @@ import {
   getRandomChar,
   getRandomHieroglyph,
 } from "@/Helpers";
-import {
-  MousedownContext,
-  MousedownProvider,
-} from "@/Context/MousedownContext";
 import { useMousedownContext } from "@/Hooks/useMousedownContext";
 
 export const TickingTimeBomb = localFont({ src: "/TickingTimebombBB.ttf" });
@@ -31,14 +27,24 @@ export const Character: FC<ICharacterProps> = ({ data }) => {
   }, []);
 
   function changeHieroglyph() {
-    setIsHieroglyph(!isHieroglyph);
+    setIsHieroglyph(true);
 
-    if (isHieroglyph) {
-      setCharacter(getRandomChar());
-    } else {
-      setCharacter(getRandomHieroglyph());
-    }
+    setCharacter(getRandomHieroglyph());
   }
+
+  function changeCharacter() {
+    setIsHieroglyph(false);
+    setCharacter(getRandomChar());
+  }
+  // function changeHieroglyph() {
+  //   setIsHieroglyph(!isHieroglyph);
+
+  //   if (isHieroglyph) {
+  //     setCharacter(getRandomChar());
+  //   } else {
+  //     setCharacter(getRandomHieroglyph());
+  //   }
+  // }
 
   useEffect(() => {
     let intervalId: any;
@@ -74,13 +80,19 @@ export const Character: FC<ICharacterProps> = ({ data }) => {
   }, [isStarted, data.interval, isHieroglyph]);
   return (
     <Box
-      onClick={() => {
-        console.log(" x ", data.x, " y ", data.y);
+      onClick={(event: React.MouseEvent<HTMLDivElement>) => {
         changeHieroglyph();
       }}
-      onMouseOver={() => {
-        if (mouseDown.mouseIsDown) {
+      onContextMenu={(event: React.MouseEvent<HTMLDivElement>) => {
+        changeCharacter();
+      }}
+      onPointerEnter={() => {
+        if (mouseDown.mouseDown) {
           changeHieroglyph();
+        }
+
+        if (mouseDown.mouseRightDown) {
+          changeCharacter();
         }
       }}
       // onPointerOver={() => {

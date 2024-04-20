@@ -88,16 +88,25 @@ export const Matrix: FC = () => {
       justifyContent={"center"}
       alignItems={"center"}
       sx={{ height: "100vh" }}
-      onMouseDown={(e) => {
-        mouseDown.handleMouseDown();
+      onContextMenu={(e) => e.preventDefault()}
+      onMouseDown={(event: React.MouseEvent<HTMLDivElement>) => {
+        if (event.button === 0) {
+          // Left click
+          console.log("Left click");
+          mouseDown.handleMouseDown(true);
+        } else if (event.button === 2) {
+          // Right click
+          console.log("Right click");
+          // Prevent the context menu from appearing on right click
+          mouseDown.handleRightMouseDown(true);
+        }
       }}
       onMouseUp={(e) => {
-        mouseDown.handleMouseUp();
+        mouseDown.handleMouseDown(false);
+        mouseDown.handleRightMouseDown(false);
       }}
     >
       <Grid item>
-        {mouseDown.mouseIsDown ? "true" : "false"}
-
         {Matrix}
         {/* {matrixComponents} */}
       </Grid>

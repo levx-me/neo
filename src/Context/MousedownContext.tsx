@@ -1,34 +1,38 @@
 import React, { createContext, ReactNode, useState } from "react";
 import { FC } from "react";
 export interface IMousedownContext {
-  mouseIsDown: boolean;
-  handleMouseDown: () => void;
-  handleMouseUp: () => void;
+  mouseDown: boolean;
+  mouseRightDown: boolean;
+  handleMouseDown: (isDown: boolean) => void;
+  handleRightMouseDown: (isDown: boolean) => void;
 }
 export const MousedownContext = createContext<IMousedownContext>({
-  mouseIsDown: false,
-  handleMouseDown: () => {},
-  handleMouseUp: () => {},
+  mouseDown: false,
+  mouseRightDown: false,
+  handleMouseDown: (isDown: boolean) => {},
+  handleRightMouseDown: (isDown: boolean) => {},
 });
 export const MousedownProvider: FC<{ children: ReactNode }> = (props) => {
-  const [mouseIsDown, setMouseIsDown] = useState(false);
+  const [mouseDown, setMouseDown] = useState(false);
+  const [mouseRightDown, setRightMouseDown] = useState(false);
 
-  const handleMouseDown = () => {
-    console.log("handleMouseDown");
-    setMouseIsDown(() => {
-      return true;
-    });
+  const handleMouseDown = (isDown: boolean) => {
+    console.log("handleMouse");
+    setMouseDown(isDown);
   };
 
-  const handleMouseUp = () => {
-    console.log("handleMouseUp");
-    setMouseIsDown(() => {
-      return false;
-    });
+  const handleRightMouseDown = (isDown: boolean) => {
+    console.log("handleRightMouse");
+    setRightMouseDown(isDown);
   };
   return (
     <MousedownContext.Provider
-      value={{ mouseIsDown, handleMouseDown, handleMouseUp }}
+      value={{
+        mouseDown,
+        mouseRightDown,
+        handleMouseDown,
+        handleRightMouseDown,
+      }}
     >
       {props.children}
     </MousedownContext.Provider>
