@@ -5,31 +5,41 @@ import localFont from 'next/font/local';
 import { Box } from '@mui/material';
 import { getNextChar, getNextHieroglyph, getRandomChar, getRandomHieroglyph } from '@/Helpers';
 import { useMousedownContext } from '@/Hooks/useMousedownContext';
+import { useMatrixContext } from '@/Hooks/useMatrixContext';
 
 export const TickingTimeBomb = localFont({ src: '/TickingTimebombBB.ttf' });
 export const Character: FC<ICharacterProps> = ({ data }) => {
     const [isStarted, setisStarted] = React.useState<boolean>(false);
-    const [isHieroglyph, setIsHieroglyph] = React.useState<boolean>(false);
     const [character, setCharacter] = React.useState<string>(data.char);
     const mouseDown = useMousedownContext();
+    const matrix = useMatrixContext();
+    const isHieroglyph = matrix.matrix[data.y][data.x].hieroglyph;
 
     useEffect(() => {
         if (!isStarted) {
             setTimeout(() => {
                 setisStarted(true);
-            }, 1000);
+            }, 1);
         }
     }, []);
 
     function changeHieroglyph() {
-        setIsHieroglyph(true);
+        matrix.setHieroglyph(data.x, data.y, true, '');
         setCharacter(getRandomHieroglyph());
     }
 
     function changeCharacter() {
-        setIsHieroglyph(false);
+        matrix.setHieroglyph(data.x, data.y, false, '');
         setCharacter(getRandomChar());
     }
+
+    useEffect(() => {
+        if (isHieroglyph) {
+            setCharacter(getRandomHieroglyph());
+        } else {
+            setCharacter(getRandomChar());
+        }
+    }, [isHieroglyph]);
 
     useEffect(() => {
         let intervalId: any;
@@ -66,6 +76,7 @@ export const Character: FC<ICharacterProps> = ({ data }) => {
     return (
         <Box
             onClick={(event: React.MouseEvent<HTMLDivElement>) => {
+                console.log('x: ', data.x, ' y ', data.y);
                 changeHieroglyph();
             }}
             onContextMenu={(event: React.MouseEvent<HTMLDivElement>) => {
