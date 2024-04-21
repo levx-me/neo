@@ -85,6 +85,10 @@ export function generateColors(color: THexColor): TColor[] {
             textShadow: `0px 0px ${blur} ${hexColor}${opacityModifier}, 0px 0px ${blur2} #dd3333${opacityModifier2}`,
         },
         {
+            color: hexColor,
+            textShadow: `0px 0px ${blur} ${hexColor}${opacityModifier}, 0px 0px ${blur2} #dd3333${opacityModifier2}`,
+        },
+        {
             color: slightlyBrighterHexColor,
             textShadow: `0px 0px ${blur} ${slightlyBrighterHexColor}${opacityModifier}, 0px 0px ${blur2} ${slightlyBrighterHexColor}${opacityModifier2}`,
         },
