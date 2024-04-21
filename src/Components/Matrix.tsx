@@ -95,7 +95,7 @@ export const Matrix: FC = () => {
                     <Box>
                         <MuiColorInput
                             sx={sxColorInput}
-                            format="hex"
+                            format="hex8"
                             value={charColor}
                             onChange={handleCharColorChange}
                         />
@@ -115,7 +115,7 @@ export const Matrix: FC = () => {
                     <Box>
                         <MuiColorInput
                             sx={sxColorInput}
-                            format="hex"
+                            format="hex8"
                             value={hieroglyphColor}
                             onChange={handleHieroglyphColorChange}
                         />
@@ -126,7 +126,9 @@ export const Matrix: FC = () => {
                                 borderLeft: `2px solid ${COLORS.yellow}`,
                             }}
                             disableRipple
-                            onClick={Matrix.resetMatrix}
+                            onClick={() =>
+                                Matrix.setHieroglyphColor(hieroglyphColor as THexColor)
+                            }
                         >
                             Set
                         </Button>

@@ -14,6 +14,8 @@ export const Character: FC<ICharacterProps> = ({ data }) => {
     const mouseDown = useMousedownContext();
     const matrix = useMatrixContext();
     const isHieroglyph = matrix.matrix[data.y][data.x].hieroglyph;
+    const color = matrix.matrix[data.y][data.x].color;
+    const hieroglyphColor = matrix.matrix[data.y][data.x].hieroglyphColor;
 
     useEffect(() => {
         if (!isStarted) {
@@ -28,12 +30,12 @@ export const Character: FC<ICharacterProps> = ({ data }) => {
     }, matrix.matrix);
 
     function changeHieroglyph() {
-        matrix.setHieroglyph(data.x, data.y, true, defaultHieroglyphColor);
+        matrix.setHieroglyph(data.x, data.y, true);
         setCharacter(getRandomHieroglyph());
     }
 
     function changeCharacter() {
-        matrix.setHieroglyph(data.x, data.y, false, defaultHieroglyphColor);
+        matrix.setHieroglyph(data.x, data.y, false);
         setCharacter(getRandomChar());
     }
 
@@ -97,18 +99,20 @@ export const Character: FC<ICharacterProps> = ({ data }) => {
             }}
             sx={{
                 fontFamily: TickingTimeBomb.style.fontFamily,
-                color: isHieroglyph ? data.hieroglyphColor.color : data.color.color,
+                color: isHieroglyph ? hieroglyphColor : color,
                 textShadow: isHieroglyph
                     ? data.hieroglyphColor.textShadow
                     : data.color.textShadow,
                 fontSize: isHieroglyph ? '12px' : '14px',
-                display: 'inline-block',
+                // display: 'inline-block',
                 // padding: "1px 1px",
                 width: '18px',
                 // height: '28px',
                 // overflow: 'hidden',
                 userSelect: 'none',
+                lineHeight: '14px',
                 textAlign: 'center',
+                padding: '1px 0 !important',
                 '&:hover': {
                     background: '#330000',
                 },

@@ -85,7 +85,7 @@ export const sxColorInput = {
     },
     '& .MuiInputBase-input': {
         padding: '12px 4px',
-        width: '90px',
+        width: '120px',
     },
 };
 
