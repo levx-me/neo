@@ -95,12 +95,14 @@ export const Character: FC<ICharacterProps> = ({ data }) => {
                 fontFamily: TickingTimeBomb.style.fontFamily,
                 color: isHieroglyph ? '#aaaa22' : data.color.color,
                 textShadow: isHieroglyph
-                    ? '0px 0px 10px #aa11aa, 0px 0px 10px #aa11aa'
+                    ? '2px 2px 4px #aaaa1199, -2px -2px 4px #aaaa1199'
                     : data.color.textShadow,
-                fontSize: isHieroglyph ? '12px' : '20px',
+                fontSize: isHieroglyph ? '12px' : '14px',
                 display: 'inline-block',
                 // padding: "1px 1px",
-                width: '22px',
+                width: '18px',
+                // height: '28px',
+                // overflow: 'hidden',
                 userSelect: 'none',
                 textAlign: 'center',
                 '&:hover': {

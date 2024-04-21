@@ -1,6 +1,7 @@
 import { Character } from '@/Components/Character';
 import { COLUMNS, ROWS, getRandomChar, getRandomColor, getRandomInterval } from '@/Helpers';
 import { ICharacter, IMatrix, IRow } from '@/Types';
+import { Box } from '@mui/material';
 import React, { createContext, ReactNode, useEffect } from 'react';
 import { FC } from 'react';
 export interface IMatrixContext {
@@ -12,17 +13,20 @@ export interface IMatrixContext {
         isHieroglyph: boolean,
         hieroglyphColor: string,
     ) => void;
+    newMatrix: () => void;
     resetMatrix: () => void;
 }
 export const MatrixContext = createContext<IMatrixContext>({
     Matrix: null,
     setHieroglyph: (x: number, y: number, isHieroglyph: boolean, hieroglyphColor: string) => {},
     matrix: [],
+    newMatrix: () => {},
     resetMatrix: () => {},
 });
 export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
     const [matrix, setMatrix] = React.useState<IMatrix>(buildMatrix(ROWS, COLUMNS));
     const [Matrix, setMatrixRender] = React.useState<ReactNode>(null);
+    const [isStarted, setIsStarted] = React.useState<boolean>(false);
 
     function generateRow(columns: number, rowIndex: number): IRow {
         const row: IRow = [];
@@ -48,30 +52,40 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
         }
         return matrix;
     }
-    const matrixComponents = (
+    const matrixComponents = isStarted ? (
         <div>
             {matrix.map((row: IRow, rowIndex: number) => (
-                <div key={`row-${rowIndex}`}>
+                <Box
+                    style={{ overflow: 'hidden', padding: '0 !important' }}
+                    key={`row-${rowIndex}`}
+                >
                     {row.map((char: ICharacter, colIndex: number) => (
                         <Character data={char} key={`col-${colIndex}`} />
                     ))}
-                </div>
+                </Box>
             ))}
         </div>
+    ) : (
+        <></>
     );
     useEffect(() => {
         setTimeout(() => {
             setMatrix(buildMatrix(ROWS, COLUMNS));
             setMatrixRender(matrixComponents);
+            setIsStarted(true);
         }, 100);
     }, []);
+
+    function newMatrix() {
+        setMatrix(buildMatrix(ROWS, COLUMNS));
+    }
 
     function resetMatrix() {
         const newMatrix: IMatrix = [];
         matrix.forEach((row: IRow) => {
             const newRow: IRow = [];
             row.forEach((char: ICharacter) => {
-                newRow.push({ ...char, hieroglyph: false, char: getRandomChar() });
+                newRow.push({ ...char, hieroglyph: false });
             });
             newMatrix.push(newRow);
         });
@@ -87,7 +101,9 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
     }
 
     return (
-        <MatrixContext.Provider value={{ Matrix, matrix, setHieroglyph, resetMatrix }}>
+        <MatrixContext.Provider
+            value={{ Matrix: matrixComponents, matrix, setHieroglyph, newMatrix, resetMatrix }}
+        >
             {props.children}
         </MatrixContext.Provider>
     );
