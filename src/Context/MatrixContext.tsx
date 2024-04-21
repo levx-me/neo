@@ -60,18 +60,18 @@ export const MatrixContext = createContext<IMatrixContext>({
     setBackgroundColor: (color: THexColor) => {},
 });
 export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
-    const [matrix, setMatrix] = React.useState<IMatrix>(buildMatrix(ROWS, COLUMNS));
+    const [matrix, setMatrix] = React.useState<IMatrix>([[]]);
     const [isStarted, setIsStarted] = React.useState<boolean>(false);
-    const [backgroundColors, setBackgroundColors] = React.useState<TColor[]>([]);
+    const [backgroundColors, setBackgroundColors] = React.useState<TColor[]>(defaultBgColors);
     const [hieroglyphColor, sethieroglyphColor] =
         React.useState<TColor>(defaultHieroglyphColor);
 
-    function generateRow(columns: number, rowIndex: number): IRow {
+    const generateRow = (columns: number, rowIndex: number): IRow => {
         const row: IRow = [];
         for (let colIndex = 0; colIndex < columns; colIndex++) {
             row.push({
                 char: getRandomChar(),
-                color: getRandomColor(defaultBgColors),
+                color: getRandomColor(backgroundColors),
                 interval: getRandomInterval(),
                 hieroglyph: false,
                 hieroglyphColor: defaultHieroglyphColor,
@@ -80,16 +80,16 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
             });
         }
         return row;
-    }
+    };
 
-    function buildMatrix(rows: number, columns: number): IMatrix {
+    const buildMatrix = (rows: number, columns: number): IMatrix => {
         const matrix: IMatrix = [];
         for (let index = 0; index < rows; index++) {
             const row: IRow = generateRow(columns, index);
             matrix.push(row);
         }
         return matrix;
-    }
+    };
     const matrixComponents = isStarted ? (
         <div>
             {matrix.map((row: IRow, rowIndex: number) => (
