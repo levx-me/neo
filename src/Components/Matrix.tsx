@@ -1,15 +1,35 @@
 'use client';
-import { Button, Grid } from '@mui/material';
+import { Box, Button, Grid } from '@mui/material';
 import React, { FC, ReactNode } from 'react';
 import { useMousedownContext } from '@/Hooks/useMousedownContext';
 import { useMatrixContext } from '@/Hooks/useMatrixContext';
-import { sxButton, yatra } from '@/Types';
+import {
+    COLORS,
+    THexColor,
+    colors,
+    defaultHieroglyphColor,
+    sxButton,
+    sxColorInput,
+    yatra,
+} from '@/Types';
+import { MuiColorInput } from 'mui-color-input';
 
 // If loading a variable font, you don't need to specify the font weight
 
 export const Matrix: FC = () => {
     const mouseDown = useMousedownContext();
     const Matrix = useMatrixContext();
+    const [charColor, setCharColor] = React.useState<string>(colors[0].color);
+    const [hieroglyphColor, setHieroglyphColor] = React.useState<string>(
+        defaultHieroglyphColor.color,
+    );
+    const handleCharColorChange = (color: string) => {
+        setCharColor(color);
+    };
+    const handleHieroglyphColorChange = (color: string) => {
+        setHieroglyphColor(color);
+    };
+
     return (
         <Grid
             container
@@ -20,7 +40,6 @@ export const Matrix: FC = () => {
                 height: '100vh',
                 padding: '4rem 0 0 4rem ',
             }}
-            onContextMenu={(e) => e.preventDefault()}
             onMouseDown={(event: React.MouseEvent<HTMLDivElement>) => {
                 if (event.button === 0) {
                     mouseDown.handleMouseDown(true);
@@ -37,29 +56,82 @@ export const Matrix: FC = () => {
                 item
                 sx={{
                     width: 'fit-content',
-                    background: '#111111ff',
-                    padding: '1rem',
                 }}
             >
-                {Matrix.Matrix}
-            </Grid>
-            <Grid
-                item
-                sx={{
-                    marginTop: '1rem',
-                    fontFamily: yatra.style.fontFamily,
-                }}
-            >
-                <Button
-                    sx={{ ...sxButton, marginRight: '1rem' }}
-                    disableRipple
-                    onClick={Matrix.newMatrix}
+                <Box
+                    onContextMenu={(e) => e.preventDefault()}
+                    sx={{
+                        width: 'fit-content',
+                        background: 'black',
+                        padding: '1rem',
+                    }}
                 >
-                    New Seed
-                </Button>
-                <Button sx={sxButton} disableRipple onClick={Matrix.resetMatrix}>
-                    Reset
-                </Button>
+                    {Matrix.Matrix}
+                </Box>
+                <Grid
+                    item
+                    justifyContent={'space-between'}
+                    sx={{
+                        marginTop: '1rem',
+                        display: 'flex',
+                        fontFamily: yatra.style.fontFamily,
+                    }}
+                >
+                    <Button
+                        sx={{ ...sxButton, marginRight: '1rem' }}
+                        disableRipple
+                        onClick={Matrix.newMatrix}
+                    >
+                        New Seed
+                    </Button>
+                    <Button
+                        sx={{ ...sxButton, marginRight: '1rem' }}
+                        disableRipple
+                        onClick={Matrix.resetMatrix}
+                    >
+                        Reset
+                    </Button>
+
+                    <Box>
+                        <MuiColorInput
+                            sx={sxColorInput}
+                            format="hex"
+                            value={charColor}
+                            onChange={handleCharColorChange}
+                        />
+                        <Button
+                            sx={{
+                                ...sxButton,
+                                marginRight: '1rem',
+                                borderLeft: `2px solid ${COLORS.yellow}`,
+                            }}
+                            disableRipple
+                            onClick={Matrix.resetMatrix}
+                        >
+                            Set
+                        </Button>
+                    </Box>
+
+                    <Box>
+                        <MuiColorInput
+                            sx={sxColorInput}
+                            format="hex"
+                            value={hieroglyphColor}
+                            onChange={handleHieroglyphColorChange}
+                        />
+                        <Button
+                            sx={{
+                                ...sxButton,
+                                marginRight: '1rem',
+                                borderLeft: `2px solid ${COLORS.yellow}`,
+                            }}
+                            disableRipple
+                            onClick={Matrix.resetMatrix}
+                        >
+                            Set
+                        </Button>
+                    </Box>
+                </Grid>
             </Grid>
         </Grid>
     );

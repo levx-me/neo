@@ -4,6 +4,8 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { MousedownProvider } from '@/Context/MousedownContext';
 import { MatrixProvider } from '@/Context/MatrixContext';
+import { ThemeProvider } from '@mui/material';
+import { theme } from '@/Theme';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -21,7 +23,9 @@ export default function RootLayout({
         <html lang="en">
             <MatrixProvider>
                 <MousedownProvider>
-                    <body className={inter.className}>{children}</body>
+                    <ThemeProvider theme={theme}>
+                        <body className={inter.className}>{children}</body>
+                    </ThemeProvider>
                 </MousedownProvider>
             </MatrixProvider>
         </html>

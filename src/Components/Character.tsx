@@ -1,5 +1,5 @@
 'use client';
-import { ICharacterProps } from '@/Types';
+import { ICharacterProps, defaultHieroglyphColor } from '@/Types';
 import React, { FC, useEffect } from 'react';
 import localFont from 'next/font/local';
 import { Box } from '@mui/material';
@@ -23,13 +23,17 @@ export const Character: FC<ICharacterProps> = ({ data }) => {
         }
     }, []);
 
+    useEffect(() => {
+        setCharacter(data.char);
+    }, matrix.matrix);
+
     function changeHieroglyph() {
-        matrix.setHieroglyph(data.x, data.y, true, '');
+        matrix.setHieroglyph(data.x, data.y, true, defaultHieroglyphColor);
         setCharacter(getRandomHieroglyph());
     }
 
     function changeCharacter() {
-        matrix.setHieroglyph(data.x, data.y, false, '');
+        matrix.setHieroglyph(data.x, data.y, false, defaultHieroglyphColor);
         setCharacter(getRandomChar());
     }
 
@@ -93,9 +97,9 @@ export const Character: FC<ICharacterProps> = ({ data }) => {
             }}
             sx={{
                 fontFamily: TickingTimeBomb.style.fontFamily,
-                color: isHieroglyph ? '#aaaa22' : data.color.color,
+                color: isHieroglyph ? data.hieroglyphColor.color : data.color.color,
                 textShadow: isHieroglyph
-                    ? '2px 2px 4px #aaaa1199, -2px -2px 4px #aaaa1199'
+                    ? data.hieroglyphColor.textShadow
                     : data.color.textShadow,
                 fontSize: isHieroglyph ? '12px' : '14px',
                 display: 'inline-block',

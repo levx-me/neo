@@ -1,6 +1,6 @@
 import { Character } from '@/Components/Character';
 import { COLUMNS, ROWS, getRandomChar, getRandomColor, getRandomInterval } from '@/Helpers';
-import { ICharacter, IMatrix, IRow } from '@/Types';
+import { ICharacter, IMatrix, IRow, TColor, defaultHieroglyphColor } from '@/Types';
 import { Box } from '@mui/material';
 import React, { createContext, ReactNode, useEffect } from 'react';
 import { FC } from 'react';
@@ -11,14 +11,14 @@ export interface IMatrixContext {
         x: number,
         y: number,
         isHieroglyph: boolean,
-        hieroglyphColor: string,
+        hieroglyphColor: TColor,
     ) => void;
     newMatrix: () => void;
     resetMatrix: () => void;
 }
 export const MatrixContext = createContext<IMatrixContext>({
     Matrix: null,
-    setHieroglyph: (x: number, y: number, isHieroglyph: boolean, hieroglyphColor: string) => {},
+    setHieroglyph: (x: number, y: number, isHieroglyph: boolean, hieroglyphColor: TColor) => {},
     matrix: [],
     newMatrix: () => {},
     resetMatrix: () => {},
@@ -27,6 +27,7 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
     const [matrix, setMatrix] = React.useState<IMatrix>(buildMatrix(ROWS, COLUMNS));
     const [Matrix, setMatrixRender] = React.useState<ReactNode>(null);
     const [isStarted, setIsStarted] = React.useState<boolean>(false);
+    const [color, setColor] = React.useState<string>();
 
     function generateRow(columns: number, rowIndex: number): IRow {
         const row: IRow = [];
@@ -36,7 +37,7 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
                 color: getRandomColor(),
                 interval: getRandomInterval(),
                 hieroglyph: false,
-                hieroglyphColor: '',
+                hieroglyphColor: defaultHieroglyphColor,
                 x: colIndex,
                 y: rowIndex,
             });
@@ -93,7 +94,7 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
         setMatrixRender(matrixComponents);
     }
 
-    function setHieroglyph(x: number, y: number, hieroglyph: boolean, hieroglyphColor: string) {
+    function setHieroglyph(x: number, y: number, hieroglyph: boolean, hieroglyphColor: TColor) {
         const char = matrix[y][x];
         let newMatrix = matrix;
         newMatrix[y][x] = { ...char, hieroglyph, hieroglyphColor };

@@ -8,7 +8,7 @@ export interface ICharacter {
     interval: number;
     color: TColor;
     hieroglyph: boolean;
-    hieroglyphColor: string;
+    hieroglyphColor: TColor;
     x: number;
     y: number;
 }
@@ -22,6 +22,7 @@ export interface ICharacterProps {
 
 export const chars = [' ', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 export const hyeroglyphs = [' ', '𓅰', '𓃰', '𓀌', '𓋍', '𓍪', '𓍴', '𓇵', '𓀒', '𓂍', '𓀫'];
+export const hyeroglyphs2 = [' ', '𓁶', '𓃾', '𓆓', '𓃻', '𓊽', '𓍴', '𓇵', '𓀒', '𓂍', '𓀫'];
 export interface TColor {
     color: THexColor;
     textShadow: string;
@@ -32,18 +33,59 @@ const blur2 = '4px';
 const opacityModifier = '99';
 const opacityModifier2 = '55';
 
+export const defaultHieroglyphColor: TColor = {
+    color: '#aaaa22',
+    textShadow: '2px 2px 4px #aaaa1199, -2px -2px 4px #aaaa1199',
+};
+export const COLORS = {
+    yellow: '#888800',
+};
 export const sxButton = {
     fontFamily: yatra.style.fontFamily,
-    background: '#11000099',
     padding: '10px 1rem 8px 1rem',
     borderRadius: '0',
-    color: '#888800',
+    color: COLORS.yellow,
     fontSize: '20px',
+    background: '#11000099',
     '&:hover': {
         background: '#110000cc',
     },
     '&:active': {
         background: '#110000ff',
+    },
+};
+
+export const sxColorInput = {
+    '& .MuiPaper-root': {
+        background: '#222222 !important',
+    },
+    '& .MuiInputBase-root': {
+        ...sxButton,
+        padding: '0 1rem',
+        border: '0px solid transparent !important',
+        '--card-border-rgb': 'none',
+    },
+    '& .Mui-focused': {
+        border: '0px solid transparent !important',
+        '--card-border-rgb': 'none',
+    },
+
+    '& .MuiOutlinedInput-root': {
+        borderRadius: '0',
+        '& fieldset': {
+            borderColor: 'transparent',
+            borderWidth: '2px', // Adjust the top border width
+        },
+        '&:hover fieldset': {
+            borderColor: 'transparent',
+        },
+        '&.Mui-focused fieldset': {
+            borderColor: 'transparent',
+        },
+    },
+    '& .MuiInputBase-input': {
+        padding: '12px 4px',
+        width: '90px',
     },
 };
 
