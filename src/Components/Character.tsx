@@ -112,7 +112,9 @@ export const Character: FC<ICharacterProps> = ({ data }) => {
                 textAlign: 'center',
                 padding: '1px 0 !important',
                 '&:hover': {
-                    background: '#330000',
+                    background: isHieroglyph
+                        ? `${hieroglyphColor.color}55`
+                        : `${color.color}55`,
                 },
                 fontWeight: '600',
             }}
