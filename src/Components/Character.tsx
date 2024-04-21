@@ -100,9 +100,7 @@ export const Character: FC<ICharacterProps> = ({ data }) => {
             sx={{
                 fontFamily: TickingTimeBomb.style.fontFamily,
                 color: isHieroglyph ? hieroglyphColor : color,
-                textShadow: isHieroglyph
-                    ? data.hieroglyphColor.textShadow
-                    : data.color.textShadow,
+                textShadow: isHieroglyph ? hieroglyphColor.textShadow : color.textShadow,
                 fontSize: isHieroglyph ? '12px' : '14px',
                 // display: 'inline-block',
                 // padding: "1px 1px",

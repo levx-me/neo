@@ -89,7 +89,7 @@ export const sxColorInput = {
     },
 };
 
-export const colors: Array<TColor> = [
+export const defaultBgColors: Array<TColor> = [
     {
         color: '#ff5555',
         textShadow: `0px 0px ${blur} #ff6666${opacityModifier}, 0px 0px ${blur2} #ff6666${opacityModifier2}`,

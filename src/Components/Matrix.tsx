@@ -6,7 +6,7 @@ import { useMatrixContext } from '@/Hooks/useMatrixContext';
 import {
     COLORS,
     THexColor,
-    colors,
+    defaultBgColors,
     defaultHieroglyphColor,
     sxButton,
     sxColorInput,
@@ -19,7 +19,7 @@ import { MuiColorInput } from 'mui-color-input';
 export const Matrix: FC = () => {
     const mouseDown = useMousedownContext();
     const Matrix = useMatrixContext();
-    const [charColor, setCharColor] = React.useState<string>(colors[0].color);
+    const [charColor, setCharColor] = React.useState<string>(defaultBgColors[0].color);
     const [hieroglyphColor, setHieroglyphColor] = React.useState<string>(
         defaultHieroglyphColor.color,
     );
@@ -95,9 +95,16 @@ export const Matrix: FC = () => {
                     <Box>
                         <MuiColorInput
                             sx={sxColorInput}
-                            format="hex8"
+                            format="hex"
                             value={charColor}
                             onChange={handleCharColorChange}
+                            PopoverProps={{
+                                sx: {
+                                    '& .MuiColorInput-AlphaSlider': {
+                                        display: 'none',
+                                    },
+                                },
+                            }}
                         />
                         <Button
                             sx={{
@@ -106,7 +113,7 @@ export const Matrix: FC = () => {
                                 borderLeft: `2px solid ${COLORS.yellow}`,
                             }}
                             disableRipple
-                            onClick={Matrix.resetMatrix}
+                            onClick={() => Matrix.setBackgroundColor(charColor as THexColor)}
                         >
                             Set
                         </Button>
@@ -115,9 +122,16 @@ export const Matrix: FC = () => {
                     <Box>
                         <MuiColorInput
                             sx={sxColorInput}
-                            format="hex8"
+                            format="hex"
                             value={hieroglyphColor}
                             onChange={handleHieroglyphColorChange}
+                            PopoverProps={{
+                                sx: {
+                                    '& .MuiColorInput-AlphaSlider': {
+                                        display: 'none',
+                                    },
+                                },
+                            }}
                         />
                         <Button
                             sx={{
