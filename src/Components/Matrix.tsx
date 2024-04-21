@@ -5,6 +5,8 @@ import { useMousedownContext } from '@/Hooks/useMousedownContext';
 import { useMatrixContext } from '@/Hooks/useMatrixContext';
 import {
     COLORS,
+    ICharacter,
+    IRow,
     THexColor,
     defaultBgColors,
     defaultHieroglyphColor,
@@ -13,6 +15,7 @@ import {
     yatra,
 } from '@/Types';
 import { MuiColorInput } from 'mui-color-input';
+import { Character } from './Character';
 
 // If loading a variable font, you don't need to specify the font weight
 
@@ -66,7 +69,19 @@ export const Matrix: FC = () => {
                         padding: '1rem',
                     }}
                 >
-                    {Matrix.Matrix}
+                    {Matrix.isStarted ? (
+                        <div>
+                            {Matrix.matrix.map((row: IRow, rowIndex: number) => (
+                                <Box sx={{ display: 'flex' }} key={`row-${rowIndex}`}>
+                                    {row.map((char: ICharacter, colIndex: number) => (
+                                        <Character data={char} key={`col-${colIndex}`} />
+                                    ))}
+                                </Box>
+                            ))}
+                        </div>
+                    ) : (
+                        <></>
+                    )}
                 </Box>
                 <Grid
                     item
@@ -82,7 +97,8 @@ export const Matrix: FC = () => {
                         disableRipple
                         onClick={Matrix.newMatrix}
                     >
-                        New Seed
+                        {/* New Seed */}
+                        {Matrix.tick}
                     </Button>
                     <Button
                         sx={{ ...sxButton, marginRight: '1rem' }}

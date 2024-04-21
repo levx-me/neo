@@ -13,10 +13,11 @@ export const Character: FC<ICharacterProps> = ({ data }) => {
     const [character, setCharacter] = React.useState<string>(data.char);
     const mouseDown = useMousedownContext();
     const matrix = useMatrixContext();
-    const isHieroglyph = matrix.matrix[data.y][data.x].hieroglyph;
-    const color = matrix.matrix[data.y][data.x].color;
-    const hieroglyphColor = matrix.matrix[data.y][data.x].hieroglyphColor;
-
+    const characterData = matrix.matrix[data.y][data.x];
+    const isHieroglyph = characterData.hieroglyph;
+    const color = characterData.color;
+    const hieroglyphColor = characterData.hieroglyphColor;
+    const char = characterData.char;
     useEffect(() => {
         if (!isStarted) {
             setTimeout(() => {
@@ -26,8 +27,9 @@ export const Character: FC<ICharacterProps> = ({ data }) => {
     }, []);
 
     useEffect(() => {
-        setCharacter(data.char);
-    }, matrix.matrix);
+        console.log('dick');
+        setCharacter(getNextChar(char));
+    }, [matrix.tick]);
 
     function changeHieroglyph() {
         matrix.setHieroglyph(data.x, data.y, true);
@@ -47,38 +49,6 @@ export const Character: FC<ICharacterProps> = ({ data }) => {
         }
     }, [isHieroglyph]);
 
-    useEffect(() => {
-        let intervalId: any;
-
-        if (isStarted) {
-            intervalId = setInterval(() => {
-                if (isHieroglyph) {
-                    try {
-                        setCharacter((currentChar) => {
-                            return getNextHieroglyph(currentChar);
-                        });
-                    } catch (error) {
-                        setCharacter(getRandomHieroglyph());
-                    }
-                } else {
-                    try {
-                        setCharacter((currentChar) => {
-                            return getNextChar(currentChar);
-                        });
-                    } catch (error) {
-                        setCharacter(getRandomChar());
-                    }
-                }
-            }, data.interval);
-        }
-
-        // Return a cleanup function that will be called on component unmount or before re-running the effect due to dependency change
-        return () => {
-            if (intervalId) {
-                clearInterval(intervalId);
-            }
-        };
-    }, [isStarted, data.interval, isHieroglyph]);
     return (
         <Box
             onClick={(event: React.MouseEvent<HTMLDivElement>) => {
@@ -119,7 +89,7 @@ export const Character: FC<ICharacterProps> = ({ data }) => {
                 fontWeight: '600',
             }}
         >
-            {character}
+            {char}
         </Box>
     );
 };

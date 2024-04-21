@@ -1,5 +1,5 @@
 import { TColor, THexColor, chars, defaultBgColors, hyeroglyphs as hieroglyph } from '@/Types';
-export const step = 50;
+export const step = 1000;
 
 export const COLUMNS = 48;
 export const ROWS = 36;

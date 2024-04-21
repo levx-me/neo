@@ -3,13 +3,25 @@ import {
     COLUMNS,
     ROWS,
     generateColors,
+    getNextChar,
+    getNextHieroglyph,
     getRandomChar,
     getRandomColor,
     getRandomInterval,
+    maxInterval,
+    minInterval,
+    step,
 } from '@/Helpers';
 import { ICharacter, IMatrix, IRow, TColor, THexColor, defaultHieroglyphColor } from '@/Types';
 import { Box } from '@mui/material';
-import React, { createContext, Dispatch, ReactNode, SetStateAction, useEffect } from 'react';
+import React, {
+    createContext,
+    Dispatch,
+    ReactNode,
+    SetStateAction,
+    useEffect,
+    useRef,
+} from 'react';
 import { FC } from 'react';
 const blur = '2px';
 const blur2 = '4px';
@@ -49,6 +61,8 @@ export interface IMatrixContext {
     resetMatrix: () => void;
     setHieroglyphColor: (color: THexColor) => void;
     setBackgroundColor: (color: THexColor) => void;
+    isStarted: boolean;
+    tick: number;
 }
 export const MatrixContext = createContext<IMatrixContext>({
     Matrix: null,
@@ -58,13 +72,17 @@ export const MatrixContext = createContext<IMatrixContext>({
     resetMatrix: () => {},
     setHieroglyphColor: (color: THexColor) => {},
     setBackgroundColor: (color: THexColor) => {},
+    isStarted: false,
+    tick: minInterval,
 });
 export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
     const [matrix, setMatrix] = React.useState<IMatrix>([[]]);
+    const [characters, setCharacters] = React.useState<Array<Array<string>>>([[]]);
     const [isStarted, setIsStarted] = React.useState<boolean>(false);
     const [backgroundColors, setBackgroundColors] = React.useState<TColor[]>(defaultBgColors);
     const [hieroglyphColor, sethieroglyphColor] =
         React.useState<TColor>(defaultHieroglyphColor);
+    const [tick, setTick] = React.useState<number>(minInterval);
 
     const generateRow = (columns: number, rowIndex: number): IRow => {
         const row: IRow = [];
@@ -82,6 +100,25 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
         return row;
     };
 
+    function updateCharacter() {
+        const newMatrix: IMatrix = [];
+        matrix.forEach((row: IRow) => {
+            const newRow: IRow = [];
+            row.forEach((char: ICharacter) => {
+                const nextChar = char.hieroglyph
+                    ? getNextHieroglyph(char.char)
+                    : getNextChar(char.char);
+
+                newRow.push({
+                    ...char,
+                    char: nextChar,
+                });
+            });
+            newMatrix.push(newRow);
+        });
+        setMatrix(newMatrix);
+    }
+
     const buildMatrix = (rows: number, columns: number): IMatrix => {
         const matrix: IMatrix = [];
         for (let index = 0; index < rows; index++) {
@@ -90,26 +127,45 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
         }
         return matrix;
     };
-    const matrixComponents = isStarted ? (
-        <div>
-            {matrix.map((row: IRow, rowIndex: number) => (
-                <Box sx={{ display: 'flex' }} key={`row-${rowIndex}`}>
-                    {row.map((char: ICharacter, colIndex: number) => (
-                        <Character data={char} key={`col-${colIndex}`} />
-                    ))}
-                </Box>
-            ))}
-        </div>
-    ) : (
-        <></>
-    );
+
     useEffect(() => {
         setTimeout(() => {
             setBackgroundColors(defaultBgColors);
             setMatrix(buildMatrix(ROWS, COLUMNS));
             setIsStarted(true);
-        }, 100);
+        }, 1000);
     }, []);
+
+    function settick(tick: number) {
+        setTick(tick);
+    }
+
+    // const countRef = useRef(tick);
+    // useEffect(() => {
+    //     countRef.current = tick; // Update the ref to the current state on each render
+    // }, [tick]);
+    useEffect(() => {
+        let intervalId: any;
+
+        // if (isStarted) {
+        //     setTimeout(() => {
+        //         if (tick + step > maxInterval) {
+        //             settick(minInterval);
+        //             console.log('tick1', tick);
+        //         } else {
+        //             settick(tick + step);
+        //             console.log('tick2', tick);
+        //         }
+        //     }, 1000);
+        // }
+
+        // Return a cleanup function that will be called on component unmount or before re-running the effect due to dependency change
+        // return () => {
+        //     if (intervalId) {
+        //         clearInterval(intervalId);
+        //     }
+        // };
+    }, [isStarted, tick]);
 
     function newMatrix() {
         setMatrix(buildMatrix(ROWS, COLUMNS));
@@ -163,6 +219,20 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
         sethieroglyphColor({ color, textShadow: '' });
     }
 
+    const matrixComponents = isStarted ? (
+        <div>
+            {matrix.map((row: IRow, rowIndex: number) => (
+                <Box sx={{ display: 'flex' }} key={`row-${rowIndex}`}>
+                    {row.map((char: ICharacter, colIndex: number) => (
+                        <Character data={char} key={`col-${colIndex}`} />
+                    ))}
+                </Box>
+            ))}
+        </div>
+    ) : (
+        <></>
+    );
+
     return (
         <MatrixContext.Provider
             value={{
@@ -173,6 +243,8 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
                 resetMatrix,
                 setHieroglyphColor,
                 setBackgroundColor,
+                isStarted,
+                tick,
             }}
         >
             {props.children}
