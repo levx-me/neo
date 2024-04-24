@@ -21,7 +21,7 @@ export const Character: FC<ICharacterProps> = ({ data }) => {
         if (!isStarted) {
             setTimeout(() => {
                 setisStarted(true);
-            }, 1);
+            }, 100);
         }
     }, []);
 
@@ -78,7 +78,7 @@ export const Character: FC<ICharacterProps> = ({ data }) => {
                 clearInterval(intervalId);
             }
         };
-    }, [isStarted, data.interval, isHieroglyph]);
+    }, [isStarted, isHieroglyph]);
     return (
         <Box
             onClick={(event: React.MouseEvent<HTMLDivElement>) => {

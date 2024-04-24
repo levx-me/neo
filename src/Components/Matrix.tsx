@@ -98,13 +98,14 @@ export const Matrix: FC = () => {
                             format="hex"
                             value={charColor}
                             onChange={handleCharColorChange}
-                            PopoverProps={{
-                                sx: {
-                                    '& .MuiColorInput-AlphaSlider': {
-                                        display: 'none',
-                                    },
-                                },
-                            }}
+                            // PopoverProps={{
+                            //     sx: {
+                            //         '& .MuiColorInput-AlphaSlider': {
+                            //             display: 'none',
+                            //         },
+                            //     },
+                            // }}
+                            isAlphaHidden
                         />
                         <Button
                             sx={{
@@ -125,13 +126,14 @@ export const Matrix: FC = () => {
                             format="hex"
                             value={hieroglyphColor}
                             onChange={handleHieroglyphColorChange}
-                            PopoverProps={{
-                                sx: {
-                                    '& .MuiColorInput-AlphaSlider': {
-                                        display: 'none',
-                                    },
-                                },
-                            }}
+                            // PopoverProps={{
+                            //     sx: {
+                            //         '& .MuiColorInput-AlphaSlider': {
+                            //             display: 'none',
+                            //         },
+                            //     },
+                            // }}
+                            isAlphaHidden
                         />
                         <Button
                             sx={{
@@ -145,6 +147,16 @@ export const Matrix: FC = () => {
                             }
                         >
                             Set
+                        </Button>
+                        <Button
+                            sx={{
+                                ...sxButton,
+                                marginRight: '1rem',
+                            }}
+                            disableRipple
+                            onClick={() => Matrix.saveJson()}
+                        >
+                            Json
                         </Button>
                     </Box>
                 </Grid>

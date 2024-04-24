@@ -1,9 +1,9 @@
 import { TColor, THexColor, chars, defaultBgColors, hyeroglyphs as hieroglyph } from '@/Types';
-export const step = 50;
+export const step = 20;
 
 export const COLUMNS = 48;
 export const ROWS = 36;
-export const minInterval = 50;
+export const minInterval = 300;
 export const maxInterval = 2000;
 
 export function getRandomChar() {
@@ -37,8 +37,9 @@ export function getNextHieroglyph(currentChar: string) {
 export function getRandomInterval() {
     const numStep = (maxInterval - minInterval) / step;
     // Use a power less than 1 to bias towards higher intervals
-    const randomFactor = Math.random() ** 0.7; // Biasing towards higher numbers
+    const randomFactor = Math.random() ** 0.8; // Biasing towards higher numbers
     const adjustedStep = Math.floor(randomFactor * numStep + 1);
+    // return minInterval + step;
     return minInterval + adjustedStep * step;
 }
 

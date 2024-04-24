@@ -49,6 +49,7 @@ export interface IMatrixContext {
     resetMatrix: () => void;
     setHieroglyphColor: (color: THexColor) => void;
     setBackgroundColor: (color: THexColor) => void;
+    saveJson: () => void;
 }
 export const MatrixContext = createContext<IMatrixContext>({
     Matrix: null,
@@ -58,6 +59,7 @@ export const MatrixContext = createContext<IMatrixContext>({
     resetMatrix: () => {},
     setHieroglyphColor: (color: THexColor) => {},
     setBackgroundColor: (color: THexColor) => {},
+    saveJson: () => {},
 });
 export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
     const [matrix, setMatrix] = React.useState<IMatrix>([[]]);
@@ -163,6 +165,19 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
         sethieroglyphColor({ color, textShadow: '' });
     }
 
+    function saveJson() {
+        const jsonStr = JSON.stringify(matrix, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'data.json';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
     return (
         <MatrixContext.Provider
             value={{
@@ -173,6 +188,7 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
                 resetMatrix,
                 setHieroglyphColor,
                 setBackgroundColor,
+                saveJson,
             }}
         >
             {props.children}
