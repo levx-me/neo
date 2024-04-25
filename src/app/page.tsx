@@ -4,9 +4,9 @@ export default function Home() {
     return (
         <main
             style={{
-                background: 'url("/background.png")',
+                background: 'url("/bg.png")',
                 backgroundPosition: 'bottom right',
-                // backgroundSize: 'cover',
+                backgroundSize: 'cover',
                 backgroundRepeat: 'no-repeat',
             }}
         >

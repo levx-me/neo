@@ -3,7 +3,13 @@ import { ICharacterProps, defaultHieroglyphColor } from '@/Types';
 import React, { FC, useEffect } from 'react';
 import localFont from 'next/font/local';
 import { Box } from '@mui/material';
-import { getNextChar, getNextHieroglyph, getRandomChar, getRandomHieroglyph } from '@/Helpers';
+import {
+    generateTextShadow,
+    getNextChar,
+    getNextHieroglyph,
+    getRandomChar,
+    getRandomHieroglyph,
+} from '@/Helpers';
 import { useMousedownContext } from '@/Hooks/useMousedownContext';
 import { useMatrixContext } from '@/Hooks/useMatrixContext';
 
@@ -15,7 +21,7 @@ export const Character: FC<ICharacterProps> = ({ data }) => {
     const matrix = useMatrixContext();
     const isHieroglyph = matrix.matrix[data.y][data.x].hieroglyph;
     const color = matrix.matrix[data.y][data.x].color;
-    const hieroglyphColor = matrix.matrix[data.y][data.x].hieroglyphColor;
+    const hieroglyphColor = matrix.matrix[data.y][data.x].hieroglypColor;
 
     useEffect(() => {
         if (!isStarted) {
@@ -100,7 +106,9 @@ export const Character: FC<ICharacterProps> = ({ data }) => {
             sx={{
                 fontFamily: TickingTimeBomb.style.fontFamily,
                 color: isHieroglyph ? hieroglyphColor : color,
-                textShadow: isHieroglyph ? hieroglyphColor.textShadow : color.textShadow,
+                textShadow: isHieroglyph
+                    ? generateTextShadow(hieroglyphColor)
+                    : generateTextShadow(color),
                 fontSize: isHieroglyph ? '12px' : '14px',
                 // display: 'inline-block',
                 // padding: "1px 1px",
@@ -112,9 +120,7 @@ export const Character: FC<ICharacterProps> = ({ data }) => {
                 textAlign: 'center',
                 padding: '1px 0 !important',
                 '&:hover': {
-                    background: isHieroglyph
-                        ? `${hieroglyphColor.color}55`
-                        : `${color.color}55`,
+                    background: isHieroglyph ? `${hieroglyphColor}55` : `${color}55`,
                 },
                 fontWeight: '600',
             }}

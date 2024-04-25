@@ -19,10 +19,9 @@ import { MuiColorInput } from 'mui-color-input';
 export const Matrix: FC = () => {
     const mouseDown = useMousedownContext();
     const Matrix = useMatrixContext();
-    const [charColor, setCharColor] = React.useState<string>(defaultBgColors[0].color);
-    const [hieroglyphColor, setHieroglyphColor] = React.useState<string>(
-        defaultHieroglyphColor.color,
-    );
+    const [charColor, setCharColor] = React.useState<string>(defaultBgColors[0]);
+    const [hieroglyphColor, setHieroglyphColor] =
+        React.useState<string>(defaultHieroglyphColor);
     const handleCharColorChange = (color: string) => {
         setCharColor(color);
     };

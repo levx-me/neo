@@ -15,31 +15,13 @@ const blur = '2px';
 const blur2 = '4px';
 const opacityModifier = '99';
 const opacityModifier2 = '55';
-export const defaultBgColors: Array<TColor> = [
-    {
-        color: '#ff5555',
-        textShadow: `0px 0px ${blur} #ff6666${opacityModifier}, 0px 0px ${blur2} #ff6666${opacityModifier2}`,
-    },
-    {
-        color: '#dd3333',
-        textShadow: `0px 0px ${blur} #dd3333${opacityModifier}, 0px 0px ${blur2} #dd3333${opacityModifier2}`,
-    },
-    // { color: "#cc4444", textShadow: "0px 0px 10px #c44, 0px 0px 10px #c44" },
-    // { color: "#44ff44", textShadow: "0px 0px 10px #c44, 0px 0px 10px #c44" },
-    // { color: "#aa2222", textShadow: "0px 0px 10px #a22, 0px 0px 10px #a22" },
-    // { color: "#2222cc", textShadow: "0px 0px 10px #22c, 0px 0px 10px #22c" },
-    {
-        color: '#881111',
-        textShadow: `0px 0px ${blur} #991111${opacityModifier}, 0px 0px ${blur2} #991111${opacityModifier2}`,
-    },
-    {
-        color: '#881111',
-        textShadow: `0px 0px ${blur} #991111${opacityModifier}, 0px 0px ${blur2} #991111${opacityModifier2}`,
-    },
-    {
-        color: '#551111',
-        textShadow: `0px 0px ${blur} #551111${opacityModifier}, 0px 0px ${blur2} #551111${opacityModifier2}`,
-    },
+export const defaultBgColors: Array<THexColor> = [
+    '#ff5555',
+    '#dd3333',
+
+    '#881111',
+    '#881111',
+    '#551111',
 ];
 export interface IMatrixContext {
     Matrix: ReactNode | null;
@@ -64,9 +46,10 @@ export const MatrixContext = createContext<IMatrixContext>({
 export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
     const [matrix, setMatrix] = React.useState<IMatrix>([[]]);
     const [isStarted, setIsStarted] = React.useState<boolean>(false);
-    const [backgroundColors, setBackgroundColors] = React.useState<TColor[]>(defaultBgColors);
+    const [backgroundColors, setBackgroundColors] =
+        React.useState<THexColor[]>(defaultBgColors);
     const [hieroglyphColor, sethieroglyphColor] =
-        React.useState<TColor>(defaultHieroglyphColor);
+        React.useState<THexColor>(defaultHieroglyphColor);
 
     const generateRow = (columns: number, rowIndex: number): IRow => {
         const row: IRow = [];
@@ -76,7 +59,7 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
                 color: getRandomColor(backgroundColors),
                 interval: getRandomInterval(),
                 hieroglyph: false,
-                hieroglyphColor: defaultHieroglyphColor,
+                hieroglypColor: defaultHieroglyphColor,
                 x: colIndex,
                 y: rowIndex,
             });
@@ -133,7 +116,7 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
         setMatrix(newMatrix);
     }
 
-    function setBg(colors: TColor[]) {
+    function setBg(colors: THexColor[]) {
         const newMatrix: IMatrix = [];
         matrix.forEach((row: IRow) => {
             const newRow: IRow = [];
@@ -151,7 +134,7 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
     function setHieroglyph(x: number, y: number, hieroglyph: boolean) {
         const char = matrix[y][x];
         let newMatrix = matrix;
-        newMatrix[y][x] = { ...char, hieroglyph, hieroglyphColor };
+        newMatrix[y][x] = { ...char, hieroglyph: hieroglyph, hieroglypColor: hieroglyphColor };
         setMatrix(newMatrix);
     }
 
@@ -162,11 +145,27 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
         setBg(colors);
     }
     function setHieroglyphColor(color: THexColor) {
-        sethieroglyphColor({ color, textShadow: '' });
+        sethieroglyphColor(color);
+    }
+
+    interface ICharacterExport {
+        i: number;
+        c: THexColor;
+        h: number;
     }
 
     function saveJson() {
-        const jsonStr = JSON.stringify(matrix, null, 2);
+        const newMatrix: ICharacterExport[] = [];
+        matrix.forEach((row: IRow, index: number) => {
+            row.forEach((c: ICharacter) => {
+                newMatrix.push({
+                    i: c.interval,
+                    c: c.hieroglyph ? c.hieroglypColor : c.color,
+                    h: c.hieroglyph ? 1 : 0,
+                });
+            });
+        });
+        const jsonStr = JSON.stringify(newMatrix, null, 2);
         const blob = new Blob([jsonStr], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
