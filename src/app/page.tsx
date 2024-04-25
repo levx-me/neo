@@ -1,12 +1,16 @@
-"use client";
-import Image from "next/image";
-import styles from "./page.module.css";
-import { Matrix } from "@/Components/Matrix";
-
+'use client';
+import { Matrix } from '@/Components/Matrix';
 export default function Home() {
-  return (
-    <main>
-      <Matrix></Matrix>
-    </main>
-  );
+    return (
+        <main
+            style={{
+                background: 'url("/bg.png")',
+                backgroundPosition: 'bottom right',
+                backgroundSize: 'cover',
+                backgroundRepeat: 'no-repeat',
+            }}
+        >
+            <Matrix></Matrix>
+        </main>
+    );
 }
