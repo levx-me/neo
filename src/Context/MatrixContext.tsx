@@ -7,7 +7,7 @@ import {
     getRandomColor,
     getRandomInterval,
 } from '@/Helpers';
-import { ICharacter, IMatrix, IRow, TColor, THexColor, defaultHieroglyphColor } from '@/Types';
+import { ICharacter, IMatrix, IRow, TColor, THexColor, chars, defaultHieroglyphColor } from '@/Types';
 import { Box } from '@mui/material';
 import React, { createContext, Dispatch, ReactNode, SetStateAction, useEffect } from 'react';
 import { FC } from 'react';
@@ -32,6 +32,8 @@ export interface IMatrixContext {
     setHieroglyphColor: (color: THexColor) => void;
     setBackgroundColor: (color: THexColor) => void;
     saveJson: () => void;
+    encodeData: () => void;
+    decodeData: (data: string) => void;
 }
 export const MatrixContext = createContext<IMatrixContext>({
     Matrix: null,
@@ -42,6 +44,8 @@ export const MatrixContext = createContext<IMatrixContext>({
     setHieroglyphColor: (color: THexColor) => { },
     setBackgroundColor: (color: THexColor) => { },
     saveJson: () => { },
+    encodeData: () => { },
+    decodeData: (data: string) => { }
 });
 export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
     const [matrix, setMatrix] = React.useState<IMatrix>([[]]);
@@ -176,6 +180,104 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
         return svgString;
     }
 
+    /*
+        Data = <N in uint16> <color0 in bytes3> <color1 in bytes3> … <color2 in bytesN>
+        <coordinate0 in Coordinate> <coordinate1 in Coordinate> … <coordinate1727 in Coordinate>
+
+        Coordinate in bytes2 = <colorIndex in uint11> <hieroglyph in bool> <char in uint4>
+        (char of value 2^4 indicates it's empty character)
+    */
+    function encodeData(): string {
+        let colorSet = new Set<string>();
+        matrix.forEach((r: IRow, ri: number) => {
+            r.forEach((c: ICharacter, ci: number) => {
+                if (c.color.length != 7) throw new Error(`Wrong color ${c.color} at row ${ri} column ${ci}`);
+                colorSet.add(c.color.substr(1).toLowerCase());
+            });
+        });
+
+        const colors = Array.from(colorSet);
+        if (colors.length >= (2**16)) throw new Error(`Colors exceeded limit`);
+        let data = "0x" + colors.length.toString(16).padStart(2, "0");
+        for (const color of colors) {
+            data += color;
+        }
+
+        matrix.forEach((r: IRow, ri: number) => {
+            r.forEach((c: ICharacter, ci: number) => {
+                const colorIndex = colors.indexOf(c.color.substr(1));
+                if (colorIndex == -1) throw new Error(`Color ${c.color} not found at row ${ri} column ${ci}`)
+                let char = (2**4) - 1;
+                if (c.char != chars[0]) {
+                    char = Number(c.char);
+                }                 
+                const coordinate = ((colorIndex << 5) + (c.hieroglyph ? 1 << 4 : 0) + (char)).toString(16).padStart(4, "0");
+                const { char: ch, hieroglyph: h, color } = decodeCoordinate(colors, ri, ci, coordinate);
+                if (color != c.color) throw new Error("Wrong color " + JSON.stringify(c));
+                if (ch != c.char) throw new Error("Wrong ch " + JSON.stringify(c));
+                if (h != c.hieroglyph) throw new Error("Wrong h " + JSON.stringify(c));
+                if (coordinate.length > 4) throw new Error(`Invalid coordinate at row ${ri} column ${ci}`)
+                data += coordinate;
+            });
+        });
+
+        console.log(decodeData(data));
+
+        return data;
+    }
+
+    /*
+        Data = <N in uint16> <color0 in bytes3> <color1 in bytes3> … <color2 in bytesN>
+        <coordinate0 in Coordinate> <coordinate1 in Coordinate> … <coordinate1727 in Coordinate>
+
+    */
+    function decodeData(data: string): IMatrix {
+        if (data.startsWith("0x")) {
+            data = data.substr(2);
+        }
+        const colorsLength = parseInt(data.substr(0, 2), 16);
+        data = data.substr(2);
+        const colors = new Array<string>();
+        for (let i = 0; i < colorsLength; i++) {
+            colors.push(data.substr(0, 6));
+            data = data.substr(6);
+        }
+
+        const newMatrix: ICharacterSvg[][] = [];
+        for (let row = 0; row < ROWS; row++) {
+            const newRow: ICharacterSvg[] = []
+            for (let column = 0; column < COLUMNS; column++) {
+                const coordinate = parseInt(data.substr(0, 4), 16);
+                newRow.push(decodeCoordinate(colors, row, column, coordinate));
+                data = data.substr(4);
+            }
+            newMatrix.push(newRow);
+        }
+        return newMatrix;
+    }
+
+    /*
+        Coordinate in bytes2 = <colorIndex in uint11> <hieroglyph in bool> <char in uint4>
+        (char of value 2^4 indicates it's empty character)
+    */
+    function decodeCoordinate(colors: Array<string>, row: number, column: number, coordinate: string): ICharacter {
+        coordinate = parseInt(coordinate, 16);
+        const colorIndex = coordinate >> 5;
+        if (colors.length >= (2**11)) throw new Error(`colorIndex ${colorIndex} exceeded limit at row ${row} column ${column}`);
+        const hieroglyph = (coordinate % (2**5)) >> 4;
+        const char = coordinate % (2**4);
+        if (char != (2**4) - 1 && char > 9) throw new Error(`Invalid char ${char} at row ${row} column ${column}`);
+        return {
+            char: char == (2**4) - 1 ? chars[0] : char.toString(),
+            interval: getRandomInterval(),
+            color: `#${colors[colorIndex]}`,
+            hieroglyph: hieroglyph == 1 ? true: false,
+            hieroglypColor: defaultHieroglyphColor,
+            x: row,
+            y: column
+        };
+    }
+
     interface ICharacterExport {
         i: number;
         c: THexColor;
@@ -200,8 +302,16 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
             newMatrix.push(newRow)
         });
 
-        generateCharacterSVG(newMatrix)
-
+        const svg = generateCharacterSVG(newMatrix)
+        const blob = new Blob([svg], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'data.svg';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
     }
 
     function saveSvg() {
@@ -238,6 +348,7 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
                 setHieroglyphColor,
                 setBackgroundColor,
                 saveJson,
+                encodeData,
             }}
         >
             {props.children}
