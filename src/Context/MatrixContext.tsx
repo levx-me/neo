@@ -34,6 +34,7 @@ export interface IMatrixContext {
     saveJson: () => void;
     encodeData: () => void;
     decodeData: (data: string) => void;
+    mint: () => void;
 }
 export const MatrixContext = createContext<IMatrixContext>({
     Matrix: null,
@@ -45,7 +46,8 @@ export const MatrixContext = createContext<IMatrixContext>({
     setBackgroundColor: (color: THexColor) => { },
     saveJson: () => { },
     encodeData: () => { },
-    decodeData: (data: string) => { }
+    decodeData: (data: string) => { },
+    mint: () => { },
 });
 export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
     const [matrix, setMatrix] = React.useState<IMatrix>([[]]);
@@ -197,8 +199,8 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
         });
 
         const colors = Array.from(colorSet);
-        if (colors.length >= (2**16)) throw new Error(`Colors exceeded limit`);
-        let data = "0x" + colors.length.toString(16).padStart(4, "0");
+        if (colors.length >= (2 ** 16)) throw new Error(`Colors exceeded limit`);
+        let data = "0x" + colors.length.toString(16).padStart(2, "0");
         for (const color of colors) {
             data += color;
         }
@@ -207,10 +209,10 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
             r.forEach((c: ICharacter, ci: number) => {
                 const colorIndex = colors.indexOf(c.color.substr(1));
                 if (colorIndex == -1) throw new Error(`Color ${c.color} not found at row ${ri} column ${ci}`)
-                let char = (2**4) - 1;
+                let char = (2 ** 4) - 1;
                 if (c.char != chars[0]) {
                     char = Number(c.char);
-                }                 
+                }
                 const coordinate = ((colorIndex << 5) + (c.hieroglyph ? 1 << 4 : 0) + (char)).toString(16).padStart(4, "0");
                 const { char: ch, hieroglyph: h, color } = decodeCoordinate(colors, ri, ci, coordinate);
                 if (color != c.color) throw new Error("Wrong color " + JSON.stringify(c));
@@ -221,7 +223,10 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
             });
         });
 
-        console.log(data);
+        console.log('matrix')
+        console.log(matrix)
+        console.log('decodeData(data)');
+        console.log(decodeData(data));
 
         return data;
     }
@@ -235,7 +240,7 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
         if (data.startsWith("0x")) {
             data = data.substr(2);
         }
-        const colorsLength = parseInt(data.substr(0, 4), 16);
+        const colorsLength = parseInt(data.substr(0, 2), 16);
         data = data.substr(2);
         const colors = new Array<string>();
         for (let i = 0; i < colorsLength; i++) {
@@ -263,15 +268,15 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
     function decodeCoordinate(colors: Array<string>, row: number, column: number, coordinate: string): ICharacter {
         coordinate = parseInt(coordinate, 16);
         const colorIndex = coordinate >> 5;
-        if (colors.length >= (2**11)) throw new Error(`colorIndex ${colorIndex} exceeded limit at row ${row} column ${column}`);
-        const hieroglyph = (coordinate % (2**5)) >> 4;
-        const char = coordinate % (2**4);
-        if (char != (2**4) - 1 && char > 9) throw new Error(`Invalid char ${char} at row ${row} column ${column}`);
+        if (colors.length >= (2 ** 11)) throw new Error(`colorIndex ${colorIndex} exceeded limit at row ${row} column ${column}`);
+        const hieroglyph = (coordinate % (2 ** 5)) >> 4;
+        const char = coordinate % (2 ** 4);
+        if (char != (2 ** 4) - 1 && char > 9) throw new Error(`Invalid char ${char} at row ${row} column ${column}`);
         return {
-            char: char == (2**4) - 1 ? chars[0] : char.toString(),
+            char: char == (2 ** 4) - 1 ? chars[0] : char.toString(),
             interval: getRandomInterval(),
             color: `#${colors[colorIndex]}`,
-            hieroglyph: hieroglyph == 1 ? true: false,
+            hieroglyph: hieroglyph == 1 ? true : false,
             hieroglypColor: defaultHieroglyphColor,
             x: row,
             y: column
@@ -337,6 +342,13 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
         URL.revokeObjectURL(url);
     }
 
+    function mint() {
+        const encodedData = encodeData()
+        const decodedData = decodeData(encodedData)
+        console.log('decodedData')
+        console.log(decodedData)
+    }
+
     return (
         <MatrixContext.Provider
             value={{
@@ -349,6 +361,8 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
                 setBackgroundColor,
                 saveJson,
                 encodeData,
+                decodeData,
+                mint
             }}
         >
             {props.children}
