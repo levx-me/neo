@@ -245,7 +245,7 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
         console.log('decodeData(data)');
         console.log(decodeData(data));
 
-        console.log(areArraysEqual(matrix[0], decodeData(data)[0]))
+        console.log(areMatricesEqual(matrix, decodeData(data)))
 
         return data;
     }
@@ -272,7 +272,7 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
         const color = `#${colors[colorIndex]}`;
 
         // Your debugging log
-        console.log(`Decoded - Row: ${row}, Column: ${column}, Char: ${char}, Color: ${color}, Hieroglyph: ${hieroglyph}`);
+        // console.log(`Decoded - Row: ${row}, Column: ${column}, Char: ${char}, Color: ${color}, Hieroglyph: ${hieroglyph}`);
 
         return {
             char: char,
@@ -335,23 +335,42 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
         return matrix;
     }
 
-    function areArraysEqual(a1: ICharacter[], a2: ICharacter[]): boolean {
-        // First, check if the arrays are the same length
-        if (a1.length !== a2.length) {
+    function areMatricesEqual(matrix1: ICharacter[][], matrix2: ICharacter[][]): boolean {
+        // Check if both matrices have the same number of rows
+        if (matrix1.length !== matrix2.length) {
             return false;
         }
 
-        // Now, compare the color and hieroglyph properties of each ICharacter
-        for (let i = 0; i < a1.length; i++) {
-            if (a1[i].color !== a2[i].color || a1[i].hieroglyph !== a2[i].hieroglyph) {
-                // If there's a mismatch, the arrays are not the same
+        // Now check each row
+        for (let row = 0; row < matrix1.length; row++) {
+            // Check if the current rows have the same number of columns
+            if (matrix1[row].length !== matrix2[row].length) {
                 return false;
+            }
+
+            // Compare the color and hieroglyph properties of each ICharacter in the current row
+            for (let col = 0; col < matrix1[row].length; col++) {
+                if (matrix1[row][col].color !== matrix2[row][col].color ||
+                    matrix1[row][col].hieroglyph !== matrix2[row][col].hieroglyph ||
+                    matrix1[row][col].hieroglypColor !== matrix2[row][col].hieroglypColor
+                ) {
+                    // If there's a mismatch, the matrices are not the same
+                    return false;
+                }
             }
         }
 
-        // If we've made it here, the arrays are the same (based on the checked properties)
+        // If no mismatches were found, the matrices are the same
         return true;
     }
+
+    // Example usage:
+    const matrix1: ICharacter[][] = [/* ... */];
+    const matrix2: ICharacter[][] = [/* ... */];
+
+    const isEqual = areMatricesEqual(matrix1, matrix2);
+    console.log(isEqual); // This will log 'true' if they're the same, 'false' otherwise.
+
 
 
 
