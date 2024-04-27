@@ -198,7 +198,7 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
 
         const colors = Array.from(colorSet);
         if (colors.length >= (2**16)) throw new Error(`Colors exceeded limit`);
-        let data = "0x" + colors.length.toString(16).padStart(2, "0");
+        let data = "0x" + colors.length.toString(16).padStart(4, "0");
         for (const color of colors) {
             data += color;
         }
@@ -221,7 +221,7 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
             });
         });
 
-        console.log(decodeData(data));
+        console.log(data);
 
         return data;
     }
@@ -235,7 +235,7 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
         if (data.startsWith("0x")) {
             data = data.substr(2);
         }
-        const colorsLength = parseInt(data.substr(0, 2), 16);
+        const colorsLength = parseInt(data.substr(0, 4), 16);
         data = data.substr(2);
         const colors = new Array<string>();
         for (let i = 0; i < colorsLength; i++) {
