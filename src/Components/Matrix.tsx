@@ -153,7 +153,7 @@ export const Matrix: FC = () => {
                                 marginRight: '1rem',
                             }}
                             disableRipple
-                            onClick={() => Matrix.saveJson()}
+                            onClick={() => Matrix.mint()}
                         >
                             Json
                         </Button>
