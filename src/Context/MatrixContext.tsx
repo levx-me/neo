@@ -235,7 +235,7 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
     */
     function decodeData(data: string): IMatrix {
         if (data.startsWith("0x")) {
-            data = data.substr(2);
+            data = data.substr(4);
         }
         const colorsLength = parseInt(data.substr(0, 4), 16);
         data = data.substr(2);
