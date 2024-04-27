@@ -1,7 +1,7 @@
 import { TColor, THexColor, chars, defaultBgColors, hyeroglyphs as hieroglyph } from '@/Types';
 
 export const COLUMNS = 48;
-export const ROWS = 36;
+export const ROWS = 1;
 
 export const step = 50;
 export const minInterval = 300;

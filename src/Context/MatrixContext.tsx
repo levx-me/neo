@@ -11,10 +11,18 @@ import { ICharacter, IMatrix, IRow, TColor, THexColor, chars, defaultHieroglyphC
 import { Box } from '@mui/material';
 import React, { createContext, Dispatch, ReactNode, SetStateAction, useEffect } from 'react';
 import { FC } from 'react';
-const blur = '2px';
-const blur2 = '4px';
-const opacityModifier = '99';
-const opacityModifier2 = '55';
+
+interface ICharacterExport {
+    i: number;
+    c: THexColor;
+    h: number;
+}
+interface ICharacterSvg {
+    character: string;
+    color: THexColor;
+}
+
+
 export const defaultBgColors: Array<THexColor> = [
     '#ff5555',
     '#dd3333',
@@ -225,10 +233,34 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
 
         console.log('matrix')
         console.log(matrix)
+        console.log('data')
+        console.log(data)
         console.log('decodeData(data)');
         console.log(decodeData(data));
 
         return data;
+    }
+
+    /*
+        Coordinate in bytes2 = <colorIndex in uint11> <hieroglyph in bool> <char in uint4>
+        (char of value 2^4 indicates it's empty character)
+    */
+    function decodeCoordinate(colors: Array<string>, row: number, column: number, coordinate: string): ICharacter {
+        const coordinateInt = parseInt(coordinate.toString(), 16);
+        const colorIndex = coordinateInt >> 5;
+        if (colors.length >= (2 ** 11)) throw new Error(`colorIndex ${colorIndex} exceeded limit at row ${row} column ${column}`);
+        const hieroglyph = (coordinateInt % (2 ** 5)) >> 4;
+        const char = coordinateInt % (2 ** 4);
+        if (char != (2 ** 4) - 1 && char > 9) throw new Error(`Invalid char ${char} at row ${row} column ${column}`);
+        return {
+            char: char == (2 ** 4) - 1 ? chars[0] : char.toString(),
+            interval: getRandomInterval(),
+            color: `#${colors[colorIndex]}`,
+            hieroglyph: hieroglyph == 1 ? true : false,
+            hieroglypColor: defaultHieroglyphColor,
+            x: row,
+            y: column
+        };
     }
 
     /*
@@ -248,12 +280,12 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
             data = data.substr(6);
         }
 
-        const newMatrix: ICharacterSvg[][] = [];
+        const newMatrix: ICharacter[][] = [];
         for (let row = 0; row < ROWS; row++) {
-            const newRow: ICharacterSvg[] = []
+            const newRow: ICharacter[] = []
             for (let column = 0; column < COLUMNS; column++) {
                 const coordinate = parseInt(data.substr(0, 4), 16);
-                newRow.push(decodeCoordinate(colors, row, column, coordinate));
+                newRow.push(decodeCoordinate(colors, row, column, coordinate.toString()));
                 data = data.substr(4);
             }
             newMatrix.push(newRow);
@@ -261,37 +293,9 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
         return newMatrix;
     }
 
-    /*
-        Coordinate in bytes2 = <colorIndex in uint11> <hieroglyph in bool> <char in uint4>
-        (char of value 2^4 indicates it's empty character)
-    */
-    function decodeCoordinate(colors: Array<string>, row: number, column: number, coordinate: string): ICharacter {
-        coordinate = parseInt(coordinate, 16);
-        const colorIndex = coordinate >> 5;
-        if (colors.length >= (2 ** 11)) throw new Error(`colorIndex ${colorIndex} exceeded limit at row ${row} column ${column}`);
-        const hieroglyph = (coordinate % (2 ** 5)) >> 4;
-        const char = coordinate % (2 ** 4);
-        if (char != (2 ** 4) - 1 && char > 9) throw new Error(`Invalid char ${char} at row ${row} column ${column}`);
-        return {
-            char: char == (2 ** 4) - 1 ? chars[0] : char.toString(),
-            interval: getRandomInterval(),
-            color: `#${colors[colorIndex]}`,
-            hieroglyph: hieroglyph == 1 ? true : false,
-            hieroglypColor: defaultHieroglyphColor,
-            x: row,
-            y: column
-        };
-    }
 
-    interface ICharacterExport {
-        i: number;
-        c: THexColor;
-        h: number;
-    }
-    interface ICharacterSvg {
-        character: string;
-        color: THexColor;
-    }
+
+
 
 
     function saveJson() {
@@ -344,9 +348,9 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
 
     function mint() {
         const encodedData = encodeData()
-        const decodedData = decodeData(encodedData)
-        console.log('decodedData')
-        console.log(decodedData)
+        // const decodedData = decodeData(encodedData)
+        // console.log('decodedData')
+        // console.log(decodedData)
     }
 
     return (
