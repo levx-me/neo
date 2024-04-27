@@ -159,6 +159,8 @@ export const Matrix: FC = () => {
                         </Button>
                     </Box>
                 </Grid>
+
+                <w3m-button size="sm" />
             </Grid>
         </Grid>
     );

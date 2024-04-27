@@ -1,3 +1,4 @@
+'use client'
 import { Character } from '@/Components/Character';
 import {
     COLUMNS,

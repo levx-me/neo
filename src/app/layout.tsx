@@ -1,4 +1,3 @@
-'use client';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
@@ -6,6 +5,11 @@ import { MousedownProvider } from '@/Context/MousedownContext';
 import { MatrixProvider } from '@/Context/MatrixContext';
 import { ThemeProvider } from '@mui/material';
 import { theme } from '@/Theme';
+import { ContextProvider } from '@/Context';
+import { cookieToInitialState } from 'wagmi';
+import { config } from '../config';
+
+import { headers } from 'next/headers';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -19,12 +23,16 @@ export default function RootLayout({
 }: Readonly<{
     children: React.ReactNode;
 }>) {
+    const initialState = cookieToInitialState(config, headers().get('cookie'));
+
     return (
         <html lang="en">
             <MatrixProvider>
                 <MousedownProvider>
                     <ThemeProvider theme={theme}>
-                        <body className={inter.className}>{children}</body>
+                        <ContextProvider initialState={initialState}>
+                            <body className={inter.className}>{children}</body>
+                        </ContextProvider>
                     </ThemeProvider>
                 </MousedownProvider>
             </MatrixProvider>
