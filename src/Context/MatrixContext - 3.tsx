@@ -202,14 +202,7 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
         matrix.forEach((r: IRow, ri: number) => {
             r.forEach((c: ICharacter, ci: number) => {
                 if (c.color.length != 7) throw new Error(`Wrong color ${c.color} at row ${ri} column ${ci}`);
-                if (c.hieroglyph) {
-                    colorSet.add(c.hieroglypColor.substr(1).toLowerCase());
-
-                } else {
-                    colorSet.add(c.color.substr(1).toLowerCase());
-
-                }
-
+                colorSet.add(c.color.substr(1).toLowerCase());
             });
         });
 
@@ -244,8 +237,6 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
         console.log(data)
         console.log('decodeData(data)');
         console.log(decodeData(data));
-
-        console.log(areArraysEqual(matrix[0], decodeData(data)[0]))
 
         return data;
     }
@@ -315,14 +306,14 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
                 const charCode = coordinateValue & 0xF;
 
                 const char = charCode === 0xF ? ' ' : charCode.toString();
-                const color = colors[colorIndex] as THexColor ?? '#000000'; // Fallback color in case of undefined
+                const color = colors[colorIndex] ?? '#000000'; // Fallback color in case of undefined
 
                 rowCharacters.push({
                     char,
-                    color,
+                    color: color as THexColor,
                     hieroglyph,
-                    hieroglypColor: hieroglyph ? color : "#aaaa22", // Assuming it's always this value
-                    interval: getRandomInterval(), // Placeholder, as the interval isn't encoded
+                    hieroglypColor: "#aaaa22", // Assuming it's always this value
+                    interval: 1000, // Placeholder, as the interval isn't encoded
                     x: row,
                     y: column
                 });
@@ -335,23 +326,8 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
         return matrix;
     }
 
-    function areArraysEqual(a1: ICharacter[], a2: ICharacter[]): boolean {
-        // First, check if the arrays are the same length
-        if (a1.length !== a2.length) {
-            return false;
-        }
 
-        // Now, compare the color and hieroglyph properties of each ICharacter
-        for (let i = 0; i < a1.length; i++) {
-            if (a1[i].color !== a2[i].color || a1[i].hieroglyph !== a2[i].hieroglyph) {
-                // If there's a mismatch, the arrays are not the same
-                return false;
-            }
-        }
 
-        // If we've made it here, the arrays are the same (based on the checked properties)
-        return true;
-    }
 
 
 
@@ -406,7 +382,7 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
     }
 
     function mint() {
-        const encodedData = encodeData()
+        // const encodedData = encodeData()
         // console.log(decodeData('0x04881111551111dd3333ff555500070009002300040006000300470064000100090000002800280007006700490064004f004f0025000f0004006100050062002300070007006f0042000500470065000500090066002400060021002200270065004000020005006600000062'))
         // const decodedData = decodeData(encodedData)
         // console.log('decodedData')
