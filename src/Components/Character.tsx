@@ -7,8 +7,8 @@ import {
     generateTextShadow,
     getNextChar,
     getNextHieroglyph,
-    getRandomChar,
     getRandomHieroglyph,
+    getCharAt
 } from '@/Helpers';
 import { useMousedownContext } from '@/Hooks/useMousedownContext';
 import { useMatrixContext } from '@/Hooks/useMatrixContext';
@@ -35,21 +35,29 @@ export const Character: FC<ICharacterProps> = ({ data }) => {
         setCharacter(data.char);
     }, matrix.matrix);
 
+    function setHieroglyphCharacter() {
+        setCharacter(getRandomHieroglyph());
+    }
+
+    function setCharCharacter() {
+        setCharacter(getCharAt(matrix.seed, data.x, data.y));
+    }
+
     function changeHieroglyph() {
         matrix.setHieroglyph(data.x, data.y, true);
-        setCharacter(getRandomHieroglyph());
+        setHieroglyphCharacter();
     }
 
     function changeCharacter() {
         matrix.setHieroglyph(data.x, data.y, false);
-        setCharacter(getRandomChar());
+        setCharCharacter();
     }
 
     useEffect(() => {
         if (isHieroglyph) {
-            setCharacter(getRandomHieroglyph());
+            setHieroglyphCharacter();
         } else {
-            setCharacter(getRandomChar());
+            setCharCharacter();
         }
     }, [isHieroglyph]);
 
@@ -64,7 +72,7 @@ export const Character: FC<ICharacterProps> = ({ data }) => {
                             return getNextHieroglyph(currentChar);
                         });
                     } catch (error) {
-                        setCharacter(getRandomHieroglyph());
+                        setHieroglyphCharacter();
                     }
                 } else {
                     try {
@@ -72,7 +80,7 @@ export const Character: FC<ICharacterProps> = ({ data }) => {
                             return getNextChar(currentChar);
                         });
                     } catch (error) {
-                        setCharacter(getRandomChar());
+                        setCharCharacter();
                     }
                 }
             }, data.interval);

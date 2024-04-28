@@ -4,14 +4,16 @@ import {
     COLUMNS,
     ROWS,
     generateColors,
-    getRandomChar,
-    getRandomColor,
-    getRandomInterval,
+    getRandomSeed,
+    getCharAt,
+    getColorAt,
+    getIntervalAt,
 } from '@/Helpers';
-import { ICharacter, IMatrix, IRow, TColor, THexColor, chars, defaultHieroglyphColor } from '@/Types';
+import { ICharacter, IMatrix, IRow, TColor, THexColor, TSeed, chars, defaultHieroglyphColor } from '@/Types';
 import { Box } from '@mui/material';
 import React, { createContext, Dispatch, ReactNode, SetStateAction, useEffect } from 'react';
 import { FC } from 'react';
+import { toHex, fromHex } from 'viem';
 
 interface ICharacterExport {
     i: number;
@@ -27,7 +29,6 @@ interface ICharacterSvg {
 export const defaultBgColors: Array<THexColor> = [
     '#ff5555',
     '#dd3333',
-
     '#881111',
     '#881111',
     '#551111',
@@ -35,6 +36,7 @@ export const defaultBgColors: Array<THexColor> = [
 export interface IMatrixContext {
     Matrix: ReactNode | null;
     matrix: IMatrix;
+    seed: TSeed;
     setHieroglyph: (x: number, y: number, isHieroglyph: boolean) => void;
     newMatrix: () => void;
     resetMatrix: () => void;
@@ -49,6 +51,7 @@ export const MatrixContext = createContext<IMatrixContext>({
     Matrix: null,
     setHieroglyph: (x: number, y: number, isHieroglyph: boolean) => { },
     matrix: [],
+    seed: new Uint8Array(32),
     newMatrix: () => { },
     resetMatrix: () => { },
     setHieroglyphColor: (color: THexColor) => { },
@@ -60,6 +63,7 @@ export const MatrixContext = createContext<IMatrixContext>({
 });
 export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
     const [matrix, setMatrix] = React.useState<IMatrix>([[]]);
+    const [seed, setSeed] = React.useState<TSeed>(getRandomSeed());
     const [isStarted, setIsStarted] = React.useState<boolean>(false);
     const [backgroundColors, setBackgroundColors] =
         React.useState<THexColor[]>(defaultBgColors);
@@ -70,9 +74,9 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
         const row: IRow = [];
         for (let colIndex = 0; colIndex < columns; colIndex++) {
             row.push({
-                char: getRandomChar(),
-                color: getRandomColor(backgroundColors),
-                interval: getRandomInterval(),
+                char: getCharAt(seed, rowIndex, colIndex),
+                color: getColorAt(backgroundColors, seed, rowIndex, colIndex),
+                interval: getIntervalAt(seed, rowIndex, colIndex),
                 hieroglyph: false,
                 hieroglypColor: defaultHieroglyphColor,
                 x: colIndex,
@@ -112,7 +116,10 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
     }, []);
 
     function newMatrix() {
-        setMatrix(buildMatrix(ROWS, COLUMNS));
+        setSeed(getRandomSeed());
+        setTimeout(() => {
+            setMatrix(buildMatrix(ROWS, COLUMNS));
+        }, 100);
     }
 
     function resetMatrix() {
@@ -123,7 +130,6 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
                 newRow.push({
                     ...char,
                     hieroglyph: false,
-                    color: getRandomColor(backgroundColors),
                 });
             });
             newMatrix.push(newRow);
@@ -192,50 +198,49 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
     }
 
     /*
-        Data = <N in uint16> <color0 in bytes3> <color1 in bytes3> … <color2 in bytesN>
-        <coordinate0 in Coordinate> <coordinate1 in Coordinate> … <coordinate1727 in Coordinate>
+        Data = <Seed in bytes32>
+        <M in uint8> <backgroundColor0 in bytes3> ... <backgroundColor(M - 1) in bytes3>
+        <N in uint8> <color0 in bytes3> <color1 in bytes3> … <color(N - 1) in bytes3>
+        <L in uint16> <hieroglyph0 in Hieroglyph> <hieroglyph1 in Hieroglyph> … <hieroglyph(L - 1) in Hieroglyph>
 
-        Coordinate in bytes2 = <colorIndex in uint11> <hieroglyph in bool> <char in uint4>
-        (char of value 2^4 indicates it's empty character)
+        Hieroglyph in bytes3 = <row in uint8> <column in uint8> <hieroglyphColorIndex in uint8>
     */
     function encodeData(): string {
+        let data = toHex(seed);
+        data += backgroundColors.length.toString(16).padStart(2, "0");
+        backgroundColors.forEach((color: THexColor) => {
+            data += color.substring(1).toLowerCase();
+        });
+
         let colorSet = new Set<string>();
+        let hieroglyphCount = 0;
         matrix.forEach((r: IRow, ri: number) => {
             r.forEach((c: ICharacter, ci: number) => {
                 if (c.color.length != 7) throw new Error(`Wrong color ${c.color} at row ${ri} column ${ci}`);
                 if (c.hieroglyph) {
-                    colorSet.add(c.hieroglypColor.substr(1).toLowerCase());
-
-                } else {
-                    colorSet.add(c.color.substr(1).toLowerCase());
-
+                    hieroglyphCount += 1;
+                    colorSet.add(c.hieroglypColor.substring(1).toLowerCase());
                 }
-
             });
         });
 
         const colors = Array.from(colorSet);
-        if (colors.length >= (2 ** 16)) throw new Error(`Colors exceeded limit`);
-        let data = "0x" + colors.length.toString(16).padStart(2, "0");
+        if (colors.length >= 256) throw new Error(`Colors exceeded limit`);
+        data += colors.length.toString(16).padStart(2, "0");
         for (const color of colors) {
             data += color;
         }
 
+        data += hieroglyphCount.toString(16).padStart(4, "0");
         matrix.forEach((r: IRow, ri: number) => {
             r.forEach((c: ICharacter, ci: number) => {
-                const colorIndex = colors.indexOf(c.color.substr(1));
-                if (colorIndex == -1) throw new Error(`Color ${c.color} not found at row ${ri} column ${ci}`)
-                let char = (2 ** 4) - 1;
-                if (c.char != chars[0]) {
-                    char = Number(c.char);
+                if (c.hieroglyph) {
+                    const colorIndex = colors.indexOf(c.hieroglypColor.substring(1));
+                    if (colorIndex == -1) throw new Error(`Color ${c.color} not found at row ${ri} column ${ci}`)
+                    data += ri.toString(16).padStart(2, "0");
+                    data += ci.toString(16).padStart(2, "0");
+                    data += colorIndex.toString(16).padStart(2, "0");
                 }
-                const coordinate = ((colorIndex << 5) + (c.hieroglyph ? 1 << 4 : 0) + (char)).toString(16).padStart(4, "0");
-                const { char: ch, hieroglyph: h, color } = decodeCoordinate(colors, ri, ci, coordinate);
-                if (color != c.color) throw new Error("Wrong color " + JSON.stringify(c));
-                if (ch != c.char) throw new Error("Wrong ch " + JSON.stringify(c));
-                if (h != c.hieroglyph) throw new Error("Wrong h " + JSON.stringify(c));
-                if (coordinate.length > 4) throw new Error(`Invalid coordinate at row ${ri} column ${ci}`)
-                data += coordinate;
             });
         });
 
@@ -251,86 +256,63 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
         return data;
     }
 
-    function decodeCoordinate(colors: string[], row: number, column: number, encodedCoordinate: string): ICharacter {
-        const coordinateValue = parseInt(encodedCoordinate, 16);
-        const colorIndex = coordinateValue >> 5;
-        const hieroglyph = ((coordinateValue & 0x10) >> 4) === 1;
-        const charCode = coordinateValue & 0xF;
+    /*
+        Data = <Seed in bytes32>
+        <M in uint8> <backgroundColor0 in bytes3> ... <backgroundColor(M - 1) in bytes3>
+        <N in uint8> <color0 in bytes3> <color1 in bytes3> … <color(N - 1) in bytes3>
+        <L in uint16> <hieroglyph0 in Hieroglyph> <hieroglyph1 in Hieroglyph> … <hieroglyph(L - 1) in Hieroglyph>
 
-        if (colorIndex >= colors.length) {
-            throw new Error(`Color index ${colorIndex} out of bounds at row ${row} column ${column}. Available colors: ${colors.length}`);
-        }
-
-        let char;
-        if (charCode === 0xF) {
-            char = ' ';
-        } else if (charCode >= 0 && charCode <= 9) {
-            char = charCode.toString();
-        } else {
-            throw new Error(`Wrong ch value "${charCode}" at row ${row} column ${column}. Expected a value between 0 and 9 or 15 for an empty space.`);
-        }
-
-        const color = `#${colors[colorIndex]}`;
-
-        // Your debugging log
-        // console.log(`Decoded - Row: ${row}, Column: ${column}, Char: ${char}, Color: ${color}, Hieroglyph: ${hieroglyph}`);
-
-        return {
-            char: char,
-            color: color as THexColor,
-            hieroglyph: hieroglyph,
-            interval: getRandomInterval(), // Ensure this function exists and returns a valid number
-            hieroglypColor: defaultHieroglyphColor, // Ensure this default color is defined
-            x: row,
-            y: column
-        };
-    }
-
-
+        Hieroglyph in bytes3 = <row in uint8> <column in uint8> <hieroglyphColorIndex in uint8>
+    */
     function decodeData(encodedData: string): ICharacter[][] {
         if (encodedData.startsWith("0x")) {
             encodedData = encodedData.substring(2);
         }
 
+        const seed = fromHex(encodedData.substring(0, 64), "bytes");
+        encodedData = encodedData.substring(64);
+        setSeed(seed);
+
+        const bgColorCount = parseInt(encodedData.substring(0, 2), 16);
+        encodedData = encodedData.substring(2);
+
+        const bgColors = new Array<THexColor>();
+        for (let i = 0; i < bgColorCount; i++) {
+            bgColors.push(`#${encodedData.substring(0, 6)}`);
+            encodedData = encodedData.substring(6);
+        }
+        setBackgroundColors(bgColors);
+
         const colorCount = parseInt(encodedData.substring(0, 2), 16);
         encodedData = encodedData.substring(2);
 
-        const colors = [];
+        const colors = new Array<THexColor>();
         for (let i = 0; i < colorCount; i++) {
             colors.push(`#${encodedData.substring(0, 6)}`);
             encodedData = encodedData.substring(6);
         }
 
-        const matrix: ICharacter[][] = [];
-        for (let row = 0; row < ROWS; row++) {
-            const rowCharacters: ICharacter[] = [];
-            for (let column = 0; column < COLUMNS; column++) {
-                if (encodedData.length < 4) {
-                    throw new Error(`Not enough data to decode at row ${row}, column ${column}`);
-                }
-                const encodedCoordinate = encodedData.substring(0, 4);
-                const coordinateValue = parseInt(encodedCoordinate, 16);
+        const matrix = buildMatrix(ROWS, COLUMNS);
 
-                const colorIndex = coordinateValue >> 5;
-                const hieroglyph = (coordinateValue & 0x10) !== 0;
-                const charCode = coordinateValue & 0xF;
+        const hieroglyphCount = parseInt(encodedData.substring(0, 4), 16);
+        encodedData = encodedData.substring(4);
 
-                const char = charCode === 0xF ? ' ' : charCode.toString();
-                const color = colors[colorIndex] as THexColor ?? '#000000'; // Fallback color in case of undefined
+        for (let i = 0; i < hieroglyphCount; i++) {
+            const hieroglyph = parseInt(encodedData.substring(0, 6), 16);
+            encodedData = encodedData.substring(6);
 
-                rowCharacters.push({
-                    char,
-                    color,
-                    hieroglyph,
-                    hieroglypColor: hieroglyph ? color : "#aaaa22", // Assuming it's always this value
-                    interval: getRandomInterval(), // Placeholder, as the interval isn't encoded
-                    x: row,
-                    y: column
-                });
+            const row = hieroglyph >> 16;
+            const col = (hieroglyph >> 8) & 0xff;
+            const colorIndex = hieroglyph & 0xff;
+            const color = colors[colorIndex];
+            if (!color) throw new Error("Color not found with index " + colorIndex);
 
-                encodedData = encodedData.substring(4);
+            const char = matrix[row][col];
+            matrix[row][col] = {
+                ...char,
+                hieroglyph: true,
+                hieroglyphColor: color
             }
-            matrix.push(rowCharacters);
         }
 
         return matrix;
@@ -438,6 +420,7 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
             value={{
                 Matrix: matrixComponents,
                 matrix,
+                seed,
                 setHieroglyph,
                 newMatrix,
                 resetMatrix,
