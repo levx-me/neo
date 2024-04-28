@@ -10,7 +10,7 @@ export interface ICharacter {
     color: THexColor;
     hieroglyphChar: string;
     hieroglyph: boolean;
-    hieroglypColor: THexColor;
+    hieroglyphColor: THexColor;
     x: number;
     y: number;
 }
