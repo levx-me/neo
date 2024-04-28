@@ -14,8 +14,10 @@ export function getRandomSeed() {
 }
 
 function getValue(seed: TSeed, row: number, col: number) {
-    const x = seed[col % row % 32] + seed[col % 32];
-    const y = seed[row % col % 32] + seed[row % 32];
+    row += 1;
+    col += 1;
+    const x = seed[Math.floor(col / row) % 32] + seed[col % 32];
+    const y = seed[Math.floor(row / col) % 32] + seed[row % 32];
     return Math.floor(Math.sqrt(seed[x % 32] * seed[y % 32]));
 }
 

@@ -35,29 +35,23 @@ export const Character: FC<ICharacterProps> = ({ data }) => {
         setCharacter(data.char);
     }, matrix.matrix);
 
-    function setHieroglyphCharacter() {
-        setCharacter(getRandomHieroglyph());
-    }
-
-    function setCharCharacter() {
-        setCharacter(getCharAt(matrix.seed, data.x, data.y));
-    }
 
     function changeHieroglyph() {
-        matrix.setHieroglyph(data.x, data.y, true);
-        setHieroglyphCharacter();
+        const char = getRandomHieroglyph();
+        matrix.setHieroglyph(data.x, data.y, true, char);
+        setCharacter(char);
     }
 
     function changeCharacter() {
         matrix.setHieroglyph(data.x, data.y, false);
-        setCharCharacter();
+        setCharacter(getCharAt(matrix.seed, data.x, data.y));
     }
 
     useEffect(() => {
         if (isHieroglyph) {
-            setHieroglyphCharacter();
+            changeHieroglyph();
         } else {
-            setCharCharacter();
+            changeCharacter();
         }
     }, [isHieroglyph]);
 
@@ -72,7 +66,7 @@ export const Character: FC<ICharacterProps> = ({ data }) => {
                             return getNextHieroglyph(currentChar);
                         });
                     } catch (error) {
-                        setHieroglyphCharacter();
+                        changeHieroglyph();
                     }
                 } else {
                     try {
@@ -80,7 +74,7 @@ export const Character: FC<ICharacterProps> = ({ data }) => {
                             return getNextChar(currentChar);
                         });
                     } catch (error) {
-                        setCharCharacter();
+                        changeCharacter();
                     }
                 }
             }, data.interval);
