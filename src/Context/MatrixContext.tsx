@@ -62,9 +62,11 @@ export const MatrixContext = createContext<IMatrixContext>({
     decodeData: (data: string) => { },
     mint: () => { },
 });
+
+const initialSeed = getRandomSeed();
 export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
     const [matrix, setMatrix] = React.useState<IMatrix>([[]]);
-    const [seed, setSeed] = React.useState<TSeed>(getRandomSeed());
+    const [seed, setSeed] = React.useState<TSeed>(initialSeed);
     const [isStarted, setIsStarted] = React.useState<boolean>(false);
     const [backgroundColors, setBackgroundColors] =
         React.useState<THexColor[]>(defaultBgColors);
@@ -270,7 +272,7 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
             encodedData = encodedData.substring(2);
         }
 
-        const seed = fromHex(encodedData.substring(0, 64), "bytes");
+        const seed = fromHex("0x" + encodedData.substring(0, 64), "bytes");
         encodedData = encodedData.substring(64);
         setSeed(seed);
 

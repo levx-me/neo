@@ -1,5 +1,5 @@
 import { TColor, THexColor, TSeed, chars, defaultBgColors, hyeroglyphs as hieroglyph } from '@/Types';
-import { keccak256, toBytes } from "viem";
+import { keccak256, toHex, toBytes } from "viem";
 
 export const COLUMNS = 48;
 export const ROWS = 36;
