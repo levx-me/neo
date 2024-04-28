@@ -14,14 +14,18 @@ export function getRandomSeed() {
 }
 
 function getValue(seed: TSeed, row: number, col: number) {
-    const x = seed[row % 32] + seed[row % 31];
-    const y = seed[col % 32] + seed[col % 31];
+    const x = seed[col % row % 32] + seed[col % 32];
+    const y = seed[row % col % 32] + seed[row % 32];
     return Math.floor(Math.sqrt(seed[x % 32] * seed[y % 32]));
 }
 
 export function getCharAt(seed: TSeed, row: number, col: number) {
     const value = getValue(seed, row, col);
     return chars[value % chars.length];
+}
+
+export function getRandomColor(colors: THexColor[]): THexColor {
+    return colors[Math.floor(Math.random() * colors.length)];
 }
 
 export function getColorAt(colors: THexColor[], seed: TSeed, row: number, col: number): THexColor {

@@ -5,6 +5,7 @@ import {
     ROWS,
     generateColors,
     getRandomSeed,
+    getRandomColor,
     getCharAt,
     getColorAt,
     getIntervalAt,
@@ -216,7 +217,7 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
         let hieroglyphCount = 0;
         matrix.forEach((r: IRow, ri: number) => {
             r.forEach((c: ICharacter, ci: number) => {
-                if (c.color.length != 7) throw new Error(`Wrong color ${c.color} at row ${ri} column ${ci}`);
+                if (c.hieroglypColor.length != 7) throw new Error(`Wrong color ${c.hieroglypColor} at row ${ri} column ${ci}`);
                 if (c.hieroglyph) {
                     hieroglyphCount += 1;
                     colorSet.add(c.hieroglypColor.substring(1).toLowerCase());
