@@ -21,7 +21,7 @@ export const Character: FC<ICharacterProps> = ({ data }) => {
     const matrix = useMatrixContext();
     const isHieroglyph = matrix.matrix[data.y][data.x].hieroglyph;
     const color = matrix.matrix[data.y][data.x].color;
-    const hieroglyphColor = matrix.matrix[data.y][data.x].hieroglypColor;
+    const hieroglyphColor = matrix.matrix[data.y][data.x].hieroglyphColor;
 
     useEffect(() => {
         if (!isStarted) {
@@ -111,7 +111,7 @@ export const Character: FC<ICharacterProps> = ({ data }) => {
                 textShadow: isHieroglyph
                     ? generateTextShadow(hieroglyphColor)
                     : generateTextShadow(color),
-                fontSize: isHieroglyph ? '12px' : '14px',
+                fontSize: isHieroglyph ? '10px' : '14px',
                 // display: 'inline-block',
                 // padding: "1px 1px",
                 width: '18px',

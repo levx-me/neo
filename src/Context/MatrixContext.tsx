@@ -10,7 +10,7 @@ import {
     getColorAt,
     getIntervalAt,
 } from '@/Helpers';
-import { ICharacter, IMatrix, IRow, TColor, THexColor, TSeed, chars, hyeroglyphs, defaultHieroglyphColor } from '@/Types';
+import { ICharacter, IMatrix, IRow, TColor, THexColor, TSeed, chars, hyeroglyphs, defaultHieroglyphColor, T0xString } from '@/Types';
 import { Box } from '@mui/material';
 import React, { createContext, Dispatch, ReactNode, SetStateAction, useEffect } from 'react';
 import { FC } from 'react';
@@ -82,6 +82,7 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
                 interval: getIntervalAt(seed, rowIndex, colIndex),
                 hieroglyph: false,
                 hieroglyphColor: defaultHieroglyphColor,
+                hieroglyphChar: undefined,
                 x: colIndex,
                 y: rowIndex,
             });
@@ -237,12 +238,12 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
         data += hieroglyphCount.toString(16).padStart(4, "0");
         matrix.forEach((r: IRow, ri: number) => {
             r.forEach((c: ICharacter, ci: number) => {
-                if (c.hieroglyph) {
-                    if (ri >= 2**6) throw new Error(`Row index ${ri} exceeded limit`);
-                    if (ci >= 2**6) throw new Error(`Column index ${ci} exceeded limit`);
+                if (c.hieroglyph && c.hieroglyphChar) {
+                    if (ri >= 2 ** 6) throw new Error(`Row index ${ri} exceeded limit`);
+                    if (ci >= 2 ** 6) throw new Error(`Column index ${ci} exceeded limit`);
                     const index = hyeroglyphs.indexOf(c.hieroglyphChar);
                     if (index == -1) throw new Error(`Hieroglyph ${c.hieroglyphChar} not found at row ${ri} column ${ci}`)
-                    if (index >= 2**4) throw new Error(`Hieroglyph index ${index} exceeded limit`);
+                    if (index >= 2 ** 4) throw new Error(`Hieroglyph index ${index} exceeded limit`);
                     const colorIndex = colors.indexOf(c.hieroglyphColor.substring(1));
                     if (colorIndex == -1) throw new Error(`Color ${c.color} not found at row ${ri} column ${ci}`)
                     const value = (ri << 18) + (ci << 12) + (index << 8) + colorIndex;
@@ -263,12 +264,13 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
         return data;
     }
 
+
     function decodeData(encodedData: string): ICharacter[][] {
         if (encodedData.startsWith("0x")) {
             encodedData = encodedData.substring(2);
         }
 
-        const seed = fromHex("0x" + encodedData.substring(0, 64), "bytes");
+        const seed = fromHex(("0x" + encodedData.substring(0, 64)) as T0xString, "bytes");
         encodedData = encodedData.substring(64);
         setSeed(seed);
 
@@ -347,13 +349,6 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
         // If no mismatches were found, the matrices are the same
         return true;
     }
-
-    // Example usage:
-    const matrix1: ICharacter[][] = [/* ... */];
-    const matrix2: ICharacter[][] = [/* ... */];
-
-    const isEqual = areMatricesEqual(matrix1, matrix2);
-    console.log(isEqual); // This will log 'true' if they're the same, 'false' otherwise.
 
 
 
