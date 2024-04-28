@@ -3,12 +3,14 @@ export const yatra = Yatra_One({ weight: '400', subsets: ['latin'] });
 
 export type TSeed = Uint8Array;
 export type THexColor = `#${string}`;
+export type T0xString = `0x${string}`
+
 
 export interface ICharacter {
     char: string;
     interval: number;
     color: THexColor;
-    hieroglyphChar: string;
+    hieroglyphChar: string | undefined;
     hieroglyph: boolean;
     hieroglyphColor: THexColor;
     x: number;
