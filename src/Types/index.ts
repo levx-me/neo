@@ -1,6 +1,7 @@
 import { Yatra_One } from 'next/font/google';
 export const yatra = Yatra_One({ weight: '400', subsets: ['latin'] });
 
+export type TSeed = Uint8Array;
 export type THexColor = `#${string}`;
 
 export interface ICharacter {
