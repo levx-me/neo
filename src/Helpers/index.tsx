@@ -1,4 +1,5 @@
-import { TColor, THexColor, chars, defaultBgColors, hyeroglyphs as hieroglyph } from '@/Types';
+import { TColor, THexColor, TSeed, chars, defaultBgColors, hyeroglyphs as hieroglyph } from '@/Types';
+import { keccak256, toHex, toBytes } from "viem";
 
 export const COLUMNS = 48;
 export const ROWS = 36;
@@ -7,12 +8,31 @@ export const step = 50;
 export const minInterval = 300;
 export const maxInterval = 2000;
 
-export function getRandomChar() {
-    return chars[Math.floor(Math.random() * chars.length)];
+export function getRandomSeed() {
+    const random = Math.random().toString();
+    return keccak256(toBytes(random), "bytes");
+}
+
+function getValue(seed: TSeed, row: number, col: number) {
+    row += 1;
+    col += 1;
+    const x = seed[Math.floor(col / row) % 32] + seed[col % 32];
+    const y = seed[Math.floor(row / col) % 32] + seed[row % 32];
+    return Math.floor(Math.sqrt(seed[x % 32] * seed[y % 32]));
+}
+
+export function getCharAt(seed: TSeed, row: number, col: number) {
+    const value = getValue(seed, row, col);
+    return chars[value % chars.length];
 }
 
 export function getRandomColor(colors: THexColor[]): THexColor {
     return colors[Math.floor(Math.random() * colors.length)];
+}
+
+export function getColorAt(colors: THexColor[], seed: TSeed, row: number, col: number): THexColor {
+    const value = getValue(seed, row, col);
+    return colors[value % colors.length];
 }
 
 export function getNextChar(currentChar: string) {
@@ -25,6 +45,11 @@ export function getNextChar(currentChar: string) {
 
 export function getRandomHieroglyph() {
     return hieroglyph[Math.floor(Math.random() * chars.length)];
+}
+
+export function getHieroglyphAt(seed: TSeed, row: number, col: number) {
+    const value = getValue(seed, row, col);
+    return hieroglyph[value % hieroglyph.length];
 }
 
 export function getNextHieroglyph(currentChar: string) {
@@ -44,10 +69,11 @@ export function generateTextShadow(color: THexColor) {
     return `0px 0px ${blur} ${color}${opacityModifier}, 0px 0px ${blur2} ${color}${opacityModifier2}`;
 }
 
-export function getRandomInterval() {
+export function getIntervalAt(seed: TSeed, row: number, col: number) {
+    const value = getValue(seed, row, col);
     const numStep = (maxInterval - minInterval) / step;
     // Use a power less than 1 to bias towards higher intervals
-    const randomFactor = Math.random() ** 0.8; // Biasing towards higher numbers
+    const randomFactor = (value / 256) ** 0.8; // Biasing towards higher numbers
     const adjustedStep = Math.floor(randomFactor * numStep + 1);
     // return minInterval + step;
     return minInterval + adjustedStep * step;

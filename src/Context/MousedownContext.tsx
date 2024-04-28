@@ -1,3 +1,4 @@
+"use client"
 import React, { createContext, ReactNode, useState } from "react";
 import { FC } from "react";
 export interface IMousedownContext {
@@ -9,8 +10,8 @@ export interface IMousedownContext {
 export const MousedownContext = createContext<IMousedownContext>({
   mouseDown: false,
   mouseRightDown: false,
-  handleMouseDown: (isDown: boolean) => {},
-  handleRightMouseDown: (isDown: boolean) => {},
+  handleMouseDown: (isDown: boolean) => { },
+  handleRightMouseDown: (isDown: boolean) => { },
 });
 export const MousedownProvider: FC<{ children: ReactNode }> = (props) => {
   const [mouseDown, setMouseDown] = useState(false);

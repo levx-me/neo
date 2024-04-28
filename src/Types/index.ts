@@ -1,12 +1,14 @@
 import { Yatra_One } from 'next/font/google';
 export const yatra = Yatra_One({ weight: '400', subsets: ['latin'] });
 
+export type TSeed = Uint8Array;
 export type THexColor = `#${string}`;
 
 export interface ICharacter {
     char: string;
     interval: number;
     color: THexColor;
+    hieroglyphChar: string;
     hieroglyph: boolean;
     hieroglypColor: THexColor;
     x: number;
@@ -20,9 +22,9 @@ export interface ICharacterProps {
     data: ICharacter;
 }
 
-export const chars = [' ', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-export const hyeroglyphs = [' ', '𓅰', '𓃰', '𓀌', '𓋍', '𓍪', '𓍴', '𓇵', '𓀒', '𓂍', '𓀫'];
-export const hyeroglyphs2 = [' ', '𓁶', '𓃾', '𓆓', '𓃻', '𓊽', '𓍴', '𓇵', '𓀒', '𓂍', '𓀫'];
+export const chars = [' ', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+export const hyeroglyphs = [' ', '𓅰', '𓃰', '𓀌', '𓋍', '𓍪', '𓍴', '𓇵', '𓀒', '𓂍', '𓀫'];
+export const hyeroglyphs2 = [' ', '𓁶', '𓃾', '𓆓', '𓃻', '𓊽', '𓍴', '𓇵', '𓀒', '𓂍', '𓀫'];
 export interface TColor {
     color: THexColor;
     textShadow: string;

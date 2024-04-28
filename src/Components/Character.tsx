@@ -7,8 +7,8 @@ import {
     generateTextShadow,
     getNextChar,
     getNextHieroglyph,
-    getRandomChar,
     getRandomHieroglyph,
+    getCharAt
 } from '@/Helpers';
 import { useMousedownContext } from '@/Hooks/useMousedownContext';
 import { useMatrixContext } from '@/Hooks/useMatrixContext';
@@ -35,21 +35,23 @@ export const Character: FC<ICharacterProps> = ({ data }) => {
         setCharacter(data.char);
     }, matrix.matrix);
 
+
     function changeHieroglyph() {
-        matrix.setHieroglyph(data.x, data.y, true);
-        setCharacter(getRandomHieroglyph());
+        const char = getRandomHieroglyph();
+        matrix.setHieroglyph(data.x, data.y, true, char);
+        setCharacter(char);
     }
 
     function changeCharacter() {
         matrix.setHieroglyph(data.x, data.y, false);
-        setCharacter(getRandomChar());
+        setCharacter(getCharAt(matrix.seed, data.x, data.y));
     }
 
     useEffect(() => {
         if (isHieroglyph) {
-            setCharacter(getRandomHieroglyph());
+            changeHieroglyph();
         } else {
-            setCharacter(getRandomChar());
+            changeCharacter();
         }
     }, [isHieroglyph]);
 
@@ -64,7 +66,7 @@ export const Character: FC<ICharacterProps> = ({ data }) => {
                             return getNextHieroglyph(currentChar);
                         });
                     } catch (error) {
-                        setCharacter(getRandomHieroglyph());
+                        changeHieroglyph();
                     }
                 } else {
                     try {
@@ -72,7 +74,7 @@ export const Character: FC<ICharacterProps> = ({ data }) => {
                             return getNextChar(currentChar);
                         });
                     } catch (error) {
-                        setCharacter(getRandomChar());
+                        changeCharacter();
                     }
                 }
             }, data.interval);
