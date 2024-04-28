@@ -8,8 +8,9 @@ export interface ICharacter {
     char: string;
     interval: number;
     color: THexColor;
+    hieroglyphChar: string;
     hieroglyph: boolean;
-    hieroglypColor: THexColor;
+    hieroglyphColor: THexColor;
     x: number;
     y: number;
 }

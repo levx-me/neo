@@ -5,11 +5,12 @@ import {
     ROWS,
     generateColors,
     getRandomSeed,
+    getRandomColor,
     getCharAt,
     getColorAt,
     getIntervalAt,
 } from '@/Helpers';
-import { ICharacter, IMatrix, IRow, TColor, THexColor, TSeed, chars, defaultHieroglyphColor } from '@/Types';
+import { ICharacter, IMatrix, IRow, TColor, THexColor, TSeed, chars, hyeroglyphs, defaultHieroglyphColor } from '@/Types';
 import { Box } from '@mui/material';
 import React, { createContext, Dispatch, ReactNode, SetStateAction, useEffect } from 'react';
 import { FC } from 'react';
@@ -37,7 +38,7 @@ export interface IMatrixContext {
     Matrix: ReactNode | null;
     matrix: IMatrix;
     seed: TSeed;
-    setHieroglyph: (x: number, y: number, isHieroglyph: boolean) => void;
+    setHieroglyph: (x: number, y: number, isHieroglyph: boolean, hieroglyphChar?: string) => void;
     newMatrix: () => void;
     resetMatrix: () => void;
     setHieroglyphColor: (color: THexColor) => void;
@@ -49,7 +50,7 @@ export interface IMatrixContext {
 }
 export const MatrixContext = createContext<IMatrixContext>({
     Matrix: null,
-    setHieroglyph: (x: number, y: number, isHieroglyph: boolean) => { },
+    setHieroglyph: (x: number, y: number, isHieroglyph: boolean, hieroglyphChar?: string) => { },
     matrix: [],
     seed: new Uint8Array(32),
     newMatrix: () => { },
@@ -61,9 +62,11 @@ export const MatrixContext = createContext<IMatrixContext>({
     decodeData: (data: string) => { },
     mint: () => { },
 });
+
+const initialSeed = getRandomSeed();
 export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
     const [matrix, setMatrix] = React.useState<IMatrix>([[]]);
-    const [seed, setSeed] = React.useState<TSeed>(getRandomSeed());
+    const [seed, setSeed] = React.useState<TSeed>(initialSeed);
     const [isStarted, setIsStarted] = React.useState<boolean>(false);
     const [backgroundColors, setBackgroundColors] =
         React.useState<THexColor[]>(defaultBgColors);
@@ -78,7 +81,7 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
                 color: getColorAt(backgroundColors, seed, rowIndex, colIndex),
                 interval: getIntervalAt(seed, rowIndex, colIndex),
                 hieroglyph: false,
-                hieroglypColor: defaultHieroglyphColor,
+                hieroglyphColor: defaultHieroglyphColor,
                 x: colIndex,
                 y: rowIndex,
             });
@@ -152,10 +155,10 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
         setMatrix(newMatrix);
     }
 
-    function setHieroglyph(x: number, y: number, hieroglyph: boolean) {
-        const char = matrix[y][x];
+    function setHieroglyph(x: number, y: number, hieroglyph: boolean, hieroglyphChar?: string) {
+        const cell = matrix[y][x];
         let newMatrix = matrix;
-        newMatrix[y][x] = { ...char, hieroglyph: hieroglyph, hieroglypColor: hieroglyphColor };
+        newMatrix[y][x] = { ...cell, hieroglyphChar: hieroglyph ? hieroglyphChar : undefined, hieroglyph: hieroglyph, hieroglyphColor: hieroglyphColor };
         setMatrix(newMatrix);
     }
 
@@ -203,7 +206,7 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
         <N in uint8> <color0 in bytes3> <color1 in bytes3> … <color(N - 1) in bytes3>
         <L in uint16> <hieroglyph0 in Hieroglyph> <hieroglyph1 in Hieroglyph> … <hieroglyph(L - 1) in Hieroglyph>
 
-        Hieroglyph in bytes3 = <row in uint8> <column in uint8> <hieroglyphColorIndex in uint8>
+        Hieroglyph in bytes3 = <row in uint6> <column in uint6> <hieroglyphIndex in uint4> <hieroglyphColorIndex in uint8>
     */
     function encodeData(): string {
         let data = toHex(seed);
@@ -216,10 +219,10 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
         let hieroglyphCount = 0;
         matrix.forEach((r: IRow, ri: number) => {
             r.forEach((c: ICharacter, ci: number) => {
-                if (c.color.length != 7) throw new Error(`Wrong color ${c.color} at row ${ri} column ${ci}`);
+                if (c.hieroglyphColor.length != 7) throw new Error(`Wrong color ${c.hieroglyphColor} at row ${ri} column ${ci}`);
                 if (c.hieroglyph) {
                     hieroglyphCount += 1;
-                    colorSet.add(c.hieroglypColor.substring(1).toLowerCase());
+                    colorSet.add(c.hieroglyphColor.substring(1).toLowerCase());
                 }
             });
         });
@@ -235,11 +238,15 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
         matrix.forEach((r: IRow, ri: number) => {
             r.forEach((c: ICharacter, ci: number) => {
                 if (c.hieroglyph) {
-                    const colorIndex = colors.indexOf(c.hieroglypColor.substring(1));
+                    if (ri >= 2**6) throw new Error(`Row index ${ri} exceeded limit`);
+                    if (ci >= 2**6) throw new Error(`Column index ${ci} exceeded limit`);
+                    const index = hyeroglyphs.indexOf(c.hieroglyphChar);
+                    if (index == -1) throw new Error(`Hieroglyph ${c.hieroglyphChar} not found at row ${ri} column ${ci}`)
+                    if (index >= 2**4) throw new Error(`Hieroglyph index ${index} exceeded limit`);
+                    const colorIndex = colors.indexOf(c.hieroglyphColor.substring(1));
                     if (colorIndex == -1) throw new Error(`Color ${c.color} not found at row ${ri} column ${ci}`)
-                    data += ri.toString(16).padStart(2, "0");
-                    data += ci.toString(16).padStart(2, "0");
-                    data += colorIndex.toString(16).padStart(2, "0");
+                    const value = (ri << 18) + (ci << 12) + (index << 8) + colorIndex;
+                    data += value.toString(16).padStart(6, "0");
                 }
             });
         });
@@ -256,20 +263,12 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
         return data;
     }
 
-    /*
-        Data = <Seed in bytes32>
-        <M in uint8> <backgroundColor0 in bytes3> ... <backgroundColor(M - 1) in bytes3>
-        <N in uint8> <color0 in bytes3> <color1 in bytes3> … <color(N - 1) in bytes3>
-        <L in uint16> <hieroglyph0 in Hieroglyph> <hieroglyph1 in Hieroglyph> … <hieroglyph(L - 1) in Hieroglyph>
-
-        Hieroglyph in bytes3 = <row in uint8> <column in uint8> <hieroglyphColorIndex in uint8>
-    */
     function decodeData(encodedData: string): ICharacter[][] {
         if (encodedData.startsWith("0x")) {
             encodedData = encodedData.substring(2);
         }
 
-        const seed = fromHex(encodedData.substring(0, 64), "bytes");
+        const seed = fromHex("0x" + encodedData.substring(0, 64), "bytes");
         encodedData = encodedData.substring(64);
         setSeed(seed);
 
@@ -301,15 +300,17 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
             const hieroglyph = parseInt(encodedData.substring(0, 6), 16);
             encodedData = encodedData.substring(6);
 
-            const row = hieroglyph >> 16;
-            const col = (hieroglyph >> 8) & 0xff;
+            const row = (hieroglyph >> 18) & 0x3f; // uint6
+            const col = (hieroglyph >> 12) & 0x3f; // uint6
+            const index = (hieroglyph >> 8) & 0x0f; // uint4
             const colorIndex = hieroglyph & 0xff;
             const color = colors[colorIndex];
-            if (!color) throw new Error("Color not found with index " + colorIndex);
 
             const char = matrix[row][col];
             matrix[row][col] = {
                 ...char,
+                char: chars[index],
+                hieroglyphChar: hyeroglyphs[index],
                 hieroglyph: true,
                 hieroglyphColor: color
             }
@@ -335,7 +336,7 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
             for (let col = 0; col < matrix1[row].length; col++) {
                 if (matrix1[row][col].color !== matrix2[row][col].color ||
                     matrix1[row][col].hieroglyph !== matrix2[row][col].hieroglyph ||
-                    matrix1[row][col].hieroglypColor !== matrix2[row][col].hieroglypColor
+                    matrix1[row][col].hieroglyphColor !== matrix2[row][col].hieroglyphColor
                 ) {
                     // If there's a mismatch, the matrices are not the same
                     return false;
@@ -365,7 +366,7 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
             const newRow: ICharacterSvg[] = []
             row.forEach((c: ICharacter) => {
                 newRow.push({
-                    color: c.hieroglyph ? c.hieroglypColor : c.color,
+                    color: c.hieroglyph ? c.hieroglyphColor : c.color,
                     character: c.char
                 });
             });
@@ -390,7 +391,7 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
             row.forEach((c: ICharacter) => {
                 newMatrix.push({
                     i: c.interval,
-                    c: c.hieroglyph ? c.hieroglypColor : c.color,
+                    c: c.hieroglyph ? c.hieroglyphColor : c.color,
                     h: c.hieroglyph ? 1 : 0,
                 });
             });
