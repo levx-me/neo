@@ -9,7 +9,7 @@ declare global {
 import { defaultWagmiConfig } from '@web3modal/wagmi/react/config';
 
 import { cookieStorage, createStorage } from 'wagmi';
-import { arbitrum, arbitrumSepolia, avalanche, base } from 'wagmi/chains';
+import { arbitrum, arbitrumSepolia } from 'wagmi/chains';
 
 // Get projectId at https://cloud.walletconnect.com
 export const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
@@ -26,7 +26,7 @@ const metadata = {
 
 // Create wagmiConfig
 export const config = defaultWagmiConfig({
-    chains: [arbitrum, avalanche, base, arbitrumSepolia], // required
+    chains: [arbitrum, arbitrumSepolia], // required
     projectId, // required
     metadata, // required
     ssr: true,

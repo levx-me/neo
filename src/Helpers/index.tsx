@@ -1,11 +1,11 @@
-import { TColor, THexColor, TSeed, chars, defaultBgColors, hyeroglyphs as hieroglyph } from '@/Types';
+import { TColor, THexColor, TSeed, chars, defaultBgColors, hieroglyphs2 as hieroglyph } from '@/Types';
 import { keccak256, toHex, toBytes } from "viem";
 
 export const COLUMNS = 48;
 export const ROWS = 36;
 
 export const step = 50;
-export const minInterval = 300;
+export const minInterval = 500;
 export const maxInterval = 2000;
 
 export function getRandomSeed() {
@@ -38,7 +38,7 @@ export function getColorAt(colors: THexColor[], seed: TSeed, row: number, col: n
 export function getNextChar(currentChar: string) {
     const index = chars.indexOf(currentChar); // Find the index of the current character
     if (index === -1) {
-        return ' ';
+        return ' ';
     }
     return chars[(index + 1) % chars.length]; // Get the next character, wrap around using modulo
 }

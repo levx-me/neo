@@ -25,8 +25,8 @@ export interface ICharacterProps {
 }
 
 export const chars = [' ', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-export const hyeroglyphs = [' ', '𓅰', '𓃰', '𓀌', '𓋍', '𓍪', '𓍴', '𓇵', '𓀒', '𓂍', '𓀫'];
-export const hyeroglyphs2 = [' ', '𓁶', '𓃾', '𓆓', '𓃻', '𓊽', '𓍴', '𓇵', '𓀒', '𓂍', '𓀫'];
+export const hieroglyphs = [' ', '𓅰', '𓃰', '𓀌', '𓋍', '𓍪', '𓍴', '𓇵', '𓀒', '𓂍', '𓀫'];
+export const hieroglyphs2 = [' ', '𓁶', '𓃾', '𓆓', '𓃻', '𓊽', '𓍴', '𓇵', '𓀒', '𓂍', '𓀫'];
 export interface TColor {
     color: THexColor;
     textShadow: string;

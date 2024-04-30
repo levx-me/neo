@@ -160,7 +160,9 @@ export const Matrix: FC = () => {
                     </Box>
                 </Grid>
 
-                <w3m-button size="sm" />
+                <Box sx={{ position: 'absolute', bottom: '20px', left: '20px' }}>
+                    <w3m-button size="sm" />
+                </Box>
             </Grid>
         </Grid>
     );

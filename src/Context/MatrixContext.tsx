@@ -10,7 +10,7 @@ import {
     getColorAt,
     getIntervalAt,
 } from '@/Helpers';
-import { ICharacter, IMatrix, IRow, TColor, THexColor, TSeed, chars, hyeroglyphs, defaultHieroglyphColor, T0xString } from '@/Types';
+import { ICharacter, IMatrix, IRow, TColor, THexColor, TSeed, chars, hieroglyphs2, defaultHieroglyphColor, T0xString } from '@/Types';
 import { Box } from '@mui/material';
 import React, { createContext, Dispatch, ReactNode, SetStateAction, useEffect } from 'react';
 import { FC } from 'react';
@@ -241,7 +241,7 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
                 if (c.hieroglyph && c.hieroglyphChar) {
                     if (ri >= 2 ** 6) throw new Error(`Row index ${ri} exceeded limit`);
                     if (ci >= 2 ** 6) throw new Error(`Column index ${ci} exceeded limit`);
-                    const index = hyeroglyphs.indexOf(c.hieroglyphChar);
+                    const index = hieroglyphs2.indexOf(c.hieroglyphChar);
                     if (index == -1) throw new Error(`Hieroglyph ${c.hieroglyphChar} not found at row ${ri} column ${ci}`)
                     if (index >= 2 ** 4) throw new Error(`Hieroglyph index ${index} exceeded limit`);
                     const colorIndex = colors.indexOf(c.hieroglyphColor.substring(1));
@@ -312,7 +312,7 @@ export const MatrixProvider: FC<{ children: ReactNode }> = (props) => {
             matrix[row][col] = {
                 ...char,
                 char: chars[index],
-                hieroglyphChar: hyeroglyphs[index],
+                hieroglyphChar: hieroglyphs2[index],
                 hieroglyph: true,
                 hieroglyphColor: color
             }
