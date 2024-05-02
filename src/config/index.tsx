@@ -16,11 +16,11 @@ export const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
 
 if (!projectId) throw new Error('Project ID is not defined');
 
-// @todo update metadata
+//@todo  change icon
 const metadata = {
-    name: 'Web3Modal',
-    description: 'Web3Modal Example',
-    url: 'https://web3modal.com', // origin must match your domain & subdomain
+    name: 'Caroutche',
+    description: 'Channel the power of ancient Egypt with your very own Cartouche',
+    url: 'https://cartouche.gold', // origin must match your domain & subdomain
     icons: ['https://avatars.githubusercontent.com/u/37784886'],
 };
 
